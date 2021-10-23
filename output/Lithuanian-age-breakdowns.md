@@ -74,7 +74,7 @@ per_capita_rates <- left_join(age_band_factors, natl_age_data, by = c("cohort"))
 
 </summary>
 
-![](/lt_covid_calcs/images-age_band_graphs-1.png)<!-- -->
+![](/lt_covid_calcs/output/images-age_band_graphs-1.png)<!-- -->
 
 ![](/lt_covid_calcs/images-cohort_prevalance_cases_cumulative-1.png)<!-- -->
 
