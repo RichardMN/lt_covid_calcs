@@ -30,7 +30,7 @@ jobs:
         run: |
           R -e 'install.packages("renv")'
           R -e 'renv::restore()'
-          R -e 'install.packages(c("curl", "httr", "jsonlite"))'
+          R -e 'install.packages(c("curl", "httr", "jsonlite", "ggpubr"))'
           R -e 'install.packages(c("remotes", "dplyr", "tidyr", "here", "ggplot2", "roll", "scales", "tools", "rmarkdown"))'
 
         # R -e 'remotes::install_github("epiforecasts/covidregionaldata")'
