@@ -1,5 +1,7 @@
-COVID-19 in Lithuania: Age cohort graphs
-================
+
+# COVID-19 in Lithuania: Age cohort graphs
+
+## Data source
 
 These charts are drawn using data published by the [Official Statistics
 Portal](https://osp.stat.gov.lt/pradinis) (OSP) on their [COVID-19 open
@@ -8,11 +10,8 @@ site, along with the [annual population counts for Lithuanian
 municipalities](https://osp.stat.gov.lt/en_GB/gyventojai1), also
 published by the OSP.
 
-Because the age cohorts given in the two sources do not align, when
-calculating COVID rates relative to age cohorts, a smaller number of
-larger cohorts is used.
-
-<summary>
+The R markdown source is available as a [github
+repo](https://github.com/RichardMN/lt_covid_calcs).
 
 ``` r
 age_bands_municipalities <- tibble(lt_aggregate) %>%
@@ -72,9 +71,18 @@ per_capita_rates <- left_join(age_band_factors, natl_age_data, by = c("cohort"))
   select(-count)
 ```
 
-</summary>
-
 ![](/lt_covid_calcs/images/age_band_graphs-1.png)<!-- -->
+
+These charts are inspired by the narrow age cohort graph given by the
+OSP on their [pandemic illustrations
+page](https://osp.stat.gov.lt/pandemijos-iliustracijos):
+
+!()\[<https://osp.stat.gov.lt/documents/10180/8555211/vaiku_atvejai_per14d_100k_20211023.png>\]
+
+Because the age cohorts given in the two sources used do not align, when
+calculating COVID rates relative to age cohorts, a smaller number of
+larger cohorts is used. It is also possible to extend the graph further
+back into 2021.
 
 ![](/lt_covid_calcs/images/cohort_prevalance_cases_cumulative-1.png)<!-- -->
 

@@ -9,21 +9,23 @@ params:
     label: "Prepared by:"
     value: "Richard Martin-Nielsen"
     input: text
-title: "COVID-19 in Lithuania: Age cohort graphs"
 ---
 
-These charts are drawn using data published by the
-[Official Statistics Portal](https://osp.stat.gov.lt/pradinis) (OSP)
-on their [COVID-19 open data](https://experience.arcgis.com/experience/cab84dcfe0464c2a8050a78f817924ca/page/page_5/) site, along with
-the
-[annual population counts for Lithuanian
+# COVID-19 in Lithuania: Age cohort graphs
+
+
+
+## Data source
+
+These charts are drawn using data published by the [Official Statistics
+Portal](https://osp.stat.gov.lt/pradinis) (OSP) on their [COVID-19 open
+data](https://experience.arcgis.com/experience/cab84dcfe0464c2a8050a78f817924ca/page/page_5/)
+site, along with the [annual population counts for Lithuanian
 municipalities](https://osp.stat.gov.lt/en_GB/gyventojai1), also
 published by the OSP.
 
-Because the age cohorts given in the two sources do not align,
-when calculating COVID rates relative to age cohorts, a smaller
-number of larger cohorts is used.
-
+The R markdown source is available as a [github
+repo](https://github.com/RichardMN/lt_covid_calcs).
 
 ```{r setup, include=FALSE}
 
@@ -182,8 +184,6 @@ lt_aggregate <- download_restful(
 
 ```
 
-<summary>
-
 ```{r data_manipulation, echo=TRUE}
 age_bands_municipalities <- tibble(lt_aggregate) %>%
 #  select(-object_id) %>%
@@ -242,7 +242,7 @@ per_capita_rates <- left_join(age_band_factors, natl_age_data, by = c("cohort"))
   select(-count)
 
 ```
-</summary>
+
 
 ```{r age_band_graphs, echo=FALSE}
 
@@ -274,6 +274,17 @@ age_bands %>%
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
   scale_x_date()
 ```
+
+These charts are inspired by the narrow age cohort graph given by the OSP
+on their [pandemic illustrations
+page](https://osp.stat.gov.lt/pandemijos-iliustracijos):
+
+!()[https://osp.stat.gov.lt/documents/10180/8555211/vaiku_atvejai_per14d_100k_20211023.png]
+
+Because the age cohorts given in the two sources used do not align,
+when calculating COVID rates relative to age cohorts, a smaller
+number of larger cohorts is used. It is also possible to extend the graph
+further back into 2021.
 
 ```{r cohort_prevalance_cases_cumulative, echo=FALSE}
 per_capita_rates %>%
