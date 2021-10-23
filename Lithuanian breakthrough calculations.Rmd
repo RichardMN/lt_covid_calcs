@@ -9,7 +9,7 @@ params:
     label: "Prepared by:"
     value: "Richard Martin-Nielsen"
     input: text
-title: "COVID-19 in Lithuania: Age cohort graphs"
+title: "COVID-19 in Lithuania: Vaccinations status and incidence, vaccine effectiveness"
 ---
 
 
@@ -28,11 +28,11 @@ library(ggplot2)
 # Set-up output ----
 # Figure path on disk = base.dir + fig.path
 # Figure URL online = base.url + fig.path
-knitr::opts_knit$set(base.dir = stringr::str_c(here::here(), "/output/"), base.url = "/covidregionaldatagraphs/") # project root folder
+knitr::opts_knit$set(base.dir = stringr::str_c(here::here(), "/docs/"), base.url = "/lt_covid_calcs/") # project root folder
 knitr::opts_chunk$set(
-  fig.path = stringr::str_c(paste0(paste("images", sep = "/")), "-"),
-  message = FALSE,
-  warning = FALSE
+	fig.path = stringr::str_c(paste0(paste("images", sep = "/")), "/"),
+	message = FALSE,
+	warning = FALSE
 )
 
 # dataset description: https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/1fd352a1c4534afe8ff87c564c0724c0_0/about
@@ -145,24 +145,24 @@ download_restful <- function (api_call = "",
     return(NULL)
   }
   get_data <- GET(api_call)
-  
+
   get_content <- content(get_data, "text")
-  
+
   get_json <- fromJSON(get_content, flatten = TRUE)
-  
+
   get_df <- as.data.frame(get_json$features)
-  
+
   result_offset <- dim(get_df)
   result_offset <- result_offset[1]
-  
+
   get_df <- data_filter(get_df)
-  
+
   page <- 1
   done_download <- FALSE
   supp_data <- get_data
-  
+
   rm("get_data", "get_content", "get_json")
-  
+
   while (!done_download && supp_data$status_code == 200) {
     offset <- result_offset * page
     page <- page + 1
@@ -170,14 +170,14 @@ download_restful <- function (api_call = "",
       paste(api_call, "&resultOffset=", sprintf("%d", offset), sep = "")
     supp_data <- GET(supp_api_call)
     message( ".", appendLF = FALSE)
-    
+
     supp_content <- content(supp_data, "text")
     supp_json <- fromJSON(supp_content, flatten = TRUE)
     supp_df <- as.data.frame(supp_json$features) %>%
       data_filter()
     row_count <- dim(supp_json$features)
     row_count <- row_count[1]
-    
+
     if (!hasName(supp_json, "exceededTransferLimit")) {
       message(
         "\nDownload complete"
@@ -204,10 +204,7 @@ lt_vacc_eff_data <- download_restful(
 ```
 
 
-<summary>
-
-
-```{r data_manipulation, echo=TRUE}
+```{r data_manipulation, echo=FALSE}
 
 lt_natl_ve_data <- tibble(lt_vacc_eff_data) %>%
   #select(-object_id) %>%
@@ -262,7 +259,6 @@ infection_comparisons <- lt_natl_ve_data %>%
     names_to = "event")
 ```
 
-</summary>
 
 ```{r cases_graph_contributions}
 infection_comparisons %>%

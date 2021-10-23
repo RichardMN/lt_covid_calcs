@@ -1,63 +1,6 @@
-COVID-19 in Lithuania: Age cohort graphs
+COVID-19 in Lithuania: Vaccinations status and incidence, vaccine
+effectiveness
 ================
-
-<summary>
-
-``` r
-lt_natl_ve_data <- tibble(lt_vacc_eff_data) %>%
-  #select(-object_id) %>%
-  group_by(date, sex, age_gr) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE))) %>%
-  ungroup()
-
-lt_pop <- 2795680
-
-# library(covidregionaldata)
-# get_regional_data("Lithuania") %>% select(cases_new,date) %>% filter(date < ymd("2021-01-01")) %>% summarise(cases=sum(cases_new))
-cases_in_2020 <- 147984
-
-r0_init <- lt_pop - cases_in_2020
-
-infection_comparisons <- lt_natl_ve_data %>%
-  # select(date, age_gr, sex,
-  #        r0i0, r1i1, r2i2, r3i3, # infection events
-  #        r1r2, r2r3  # vaccination transitions
-  #        ) %>%
-  #filter(date == "2021-10-18") %>%
-  group_by(date) %>%
-  #select(-date)%>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE))) %>%
-  mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
-  ungroup() %>%
-  # calculate populations in each category
-  mutate(
-    censored = r0c0+r0c1+r1c1+r1c2+r2c2+r2c3+r3c3, # per day
-    infected = r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3, # per day
-    r_pop = r0_init - cumsum(censored + infected),
-    r_pop_r1 = cumsum(r0r1-r1r2-r1i1-r1c1-r1i2-r1c2),
-    r_pop_r2 = cumsum(r1r2-r2r3-r2i2-r2c2-r2i3-r2c3),
-    r_pop_r3 = cumsum(r2r3-r3c3-r3i3),
-    r_pop_r0 = r0_init - r_pop_r1 - r_pop_r2 - r_pop_r3) %>%
-  # fractions of each population infected
-  mutate(
-    i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
-    i_frac_r1 = (r1i1+r1i2) / r_pop_r1,
-    i_frac_r2 = (r2i2+r2i3) / r_pop_r2,
-    i_frac_r3 = (r3i3) / r_pop_r3
-  ) %>%
-  mutate(
-    ve_vs_r0_r1 =  (i_frac_r0 - i_frac_r1)/i_frac_r0,
-    ve_vs_r0_r2 = (i_frac_r0 - i_frac_r2)/i_frac_r0, #i_frac_r2 / i_frac_r0,
-    ve_vs_r0_r3 = if_else(r_pop_r3 != 0,(i_frac_r0 - i_frac_r3)/i_frac_r0, NA_real_)
-  ) %>%
-  pivot_longer(
-    cols = !c("date"),
-    values_to = "count",
-    names_to = "event")
-```
-
-</summary>
 
 ``` r
 infection_comparisons %>%
@@ -89,7 +32,7 @@ infection_comparisons %>%
   scale_x_date()
 ```
 
-![](/covidregionaldatagraphs/images-cases_graph_contributions-1.png)<!-- -->
+![](/lt_covid_calcs/images/cases_graph_contributions-1.png)<!-- -->
 
 ``` r
 infection_comparisons %>%
@@ -116,7 +59,7 @@ infection_comparisons %>%
   scale_x_date()
 ```
 
-![](/covidregionaldatagraphs/images-cases_graph_fractions-1.png)<!-- -->
+![](/lt_covid_calcs/images/cases_graph_fractions-1.png)<!-- -->
 
 ``` r
 infection_comparisons %>%
@@ -145,7 +88,7 @@ infection_comparisons %>%
   scale_x_date()
 ```
 
-![](/covidregionaldatagraphs/images-cases_by_status_proportional-1.png)<!-- -->
+![](/lt_covid_calcs/images/cases_by_status_proportional-1.png)<!-- -->
 
 ``` r
 infection_comparisons %>%
@@ -183,7 +126,7 @@ infection_comparisons %>%
   scale_x_date()
 ```
 
-![](/covidregionaldatagraphs/images-vaccine_effectiveness_7d-1.png)<!-- -->
+![](/lt_covid_calcs/images/vaccine_effectiveness_7d-1.png)<!-- -->
 
 ``` r
 infection_comparisons %>%
@@ -221,4 +164,4 @@ infection_comparisons %>%
   scale_x_date()
 ```
 
-![](/covidregionaldatagraphs/images-vaccine_effectiveness_14d-1.png)<!-- -->
+![](/lt_covid_calcs/images/vaccine_effectiveness_14d-1.png)<!-- -->
