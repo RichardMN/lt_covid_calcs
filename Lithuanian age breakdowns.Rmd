@@ -278,7 +278,7 @@ These charts are inspired by the narrow age cohort graph given by the OSP
 on their [pandemic illustrations
 page](https://osp.stat.gov.lt/pandemijos-iliustracijos):
 
-!()[https://osp.stat.gov.lt/documents/10180/8555211/vaiku_atvejai_per14d_100k_20211023.png]
+![](https://osp.stat.gov.lt/documents/10180/8555211/vaiku_atvejai_per14d_100k_20211023.png)
 
 Because the age cohorts given in the two sources used do not align,
 when calculating COVID rates relative to age cohorts, a smaller
