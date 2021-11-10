@@ -52,6 +52,10 @@ library(stringr)
 library(httr)
 library(jsonlite)
 library(ggplot2)
+library(spatstat)
+library(zoo)
+library(ggpubr)
+library(cowplot)
 
 # Set-up output ----
 # Figure path on disk = base.dir + fig.path
@@ -298,7 +302,7 @@ lt_natl_ve_data <- tibble(lt_vacc_eff_data) %>%
 
 r0_init <- sum(initial_state$at_risk)
 
-infection_comparisons <- lt_natl_ve_data %>%
+infection_comparisons_wide <- lt_natl_ve_data %>%
   # select(date, age_gr, sex,
   #        r0i0, r1i1, r2i2, r3i3, # infection events
   #        r1r2, r2r3  # vaccination transitions
@@ -330,7 +334,49 @@ infection_comparisons <- lt_natl_ve_data %>%
     ve_vs_r0_r1 =  (i_frac_r0 - i_frac_r1)/i_frac_r0,
     ve_vs_r0_r2 = (i_frac_r0 - i_frac_r2)/i_frac_r0, #i_frac_r2 / i_frac_r0,
     ve_vs_r0_r3 = if_else(r_pop_r3 != 0,(i_frac_r0 - i_frac_r3)/i_frac_r0, NA_real_)
-  ) %>%
+  )
+```
+```{r calculate median vaccination age, echo=FALSE}
+median_date <- function(data, cols=c(date="date", sums="sums")) {
+  sorted_data <- data %>% select(cols) %>%
+    arrange(cols["date"])
+  medians <- rep_len(NA_Date_, length(data[[cols["date"]]]))
+  last_median_idx <- 1
+  for (i in 1:length(data[[cols["date"]]])) {
+    if (data[[cols["sums"]]][i]>0) {
+      if (last_median_idx == 1) {
+        last_median_idx <- i
+        medians[i] <- data[[cols["date"]]][last_median_idx]
+      } else {
+        if (data[[cols["sums"]]][i] / 2 > data[[cols["sums"]]][last_median_idx] ) {
+          j <- min(last_median_idx+1,i)
+          while (data[[cols["sums"]]][i] / 2 > data[[cols["sums"]]][j]) {
+            j <- j + 1
+          }
+          last_median_idx <- j - 1
+        }
+        medians[i] <- data[[cols["date"]]][last_median_idx]
+      }
+    }
+  }
+  return(as_date(medians))
+}
+
+narrowed_comps <- infection_comparisons_wide %>%
+  mutate(fully_vxd_14d = r1r2) %>%
+  select(date, fully_vxd_14d) %>%
+  mutate(fully_vxd_14d_tot = cumsum(fully_vxd_14d))
+
+median_age_calcs <- infection_comparisons_wide %>%
+  mutate(med_date = median_date(data = narrowed_comps,
+                                cols=c(date="date", sums="fully_vxd_14d_tot"))) %>%
+  mutate(med_vxd_age = if_else(is.na(med_date),
+                               NA_integer_,
+                               # individuals are only counted into r1r2
+                               # once they are 14 days beyond second dose
+                               as.integer(date) - as.integer(med_date)+14L))
+
+infection_comparisons <- infection_comparisons_wide %>%
   pivot_longer(
     cols = !c("date"),
     values_to = "count",
@@ -421,7 +467,19 @@ infection_comparisons %>%
 ```
 
 ```{r vaccine_effectiveness_7d}
-infection_comparisons %>%
+
+med_age_plot <- median_age_calcs %>%
+  filter(date > ymd("2021-03-01")) %>%
+  ggplot(aes(x = date, y=med_vxd_age)) +
+  theme_minimal() +
+  geom_line(size=1) +
+  scale_x_date() +
+  scale_y_continuous(
+    sec.axis = sec_axis(~ .),
+    oob = scales::oob_censor)  +
+  labs(x="Date", y="Median days since 2nd dose")
+
+inf_eff_plot <- infection_comparisons %>%
   group_by(event) %>%
   mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=0, align="right") ) %>%
   ungroup() %>%
@@ -449,11 +507,20 @@ infection_comparisons %>%
     labels = scales::percent,
     oob = scales::oob_censor) +
   labs(title="Lithuania - COVID-19 vaccine effectiveness by vaccination status",
-       subtitle="7 day mean compared with unvaccinated",
-       y="Incidence within population relative to unvaccinated",
-       x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+       subtitle="Calculated on 7 day averages, compared with median days since 2nd dose",
+       y="Effectiveness",
+       y="Date"
+) +
   scale_x_date()
+
+combined_figure <- ggarrange(inf_eff_plot,
+          med_age_plot,
+          ncol=1,
+          heights=c(3,1)
+          )
+
+annotate_figure(combined_figure,
+                bottom=text_grob("Richard Martin-Nielsen\nData: Office of Statistics Portal osp.stat.gov.lt", hjust=1, x=1, size=8))
 ```
 
 ```{r vaccine_effectiveness_14d}
