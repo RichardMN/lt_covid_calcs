@@ -54,8 +54,10 @@ library(jsonlite)
 library(ggplot2)
 library(spatstat)
 library(zoo)
-library(ggpubr)
-library(cowplot)
+library(scales)
+# library(ggpubr)
+# library(cowplot)
+library(patchwork)
 
 # Set-up output ----
 # Figure path on disk = base.dir + fig.path
@@ -476,8 +478,9 @@ med_age_plot <- median_age_calcs %>%
   scale_x_date() +
   scale_y_continuous(
     sec.axis = sec_axis(~ .),
+    limits = c(0,NA),
     oob = scales::oob_censor)  +
-  labs(x="Date", y="Median days since 2nd dose")
+  labs(x="Date", y="Days since 2nd dose\n(median)")
 
 inf_eff_plot <- infection_comparisons %>%
   group_by(event) %>%
@@ -500,27 +503,31 @@ inf_eff_plot <- infection_comparisons %>%
     sec.axis = sec_axis(
       ~ .,
       breaks = seq(from = 0, to = 1, by = 0.1),
-      labels = scales::percent),
+      labels = label_percent(accuracy=1)),
     limits = c(0,1),
     breaks = seq(from = 0, to = 1, by = 0.1),
     #limits = c(0,15),
-    labels = scales::percent,
+    labels = label_percent(accuracy=1),
     oob = scales::oob_censor) +
-  labs(title="Lithuania - COVID-19 vaccine effectiveness by vaccination status",
-       subtitle="Calculated on 7 day averages, compared with median days since 2nd dose",
+  labs(
        y="Effectiveness",
        y="Date"
 ) +
   scale_x_date()
 
-combined_figure <- ggarrange(inf_eff_plot,
-          med_age_plot,
-          ncol=1,
-          heights=c(3,1)
-          )
-
-annotate_figure(combined_figure,
-                bottom=text_grob("Richard Martin-Nielsen\nData: Office of Statistics Portal osp.stat.gov.lt", hjust=1, x=1, size=8))
+inf_eff_plot / med_age_plot + plot_layout(heights = c(2,1)) +
+  plot_annotation(
+    title="Lithuania - COVID-19 vaccine effectiveness fades beyond 4 months",
+       subtitle="Calculated on 7 day averages, compared with median days since 2nd dose",
+    caption="Richard Martin-Nielsen\nData: Office of Statistics Portal osp.stat.gov.lt")
+# combined_figure <- ggarrange(inf_eff_plot,
+#           med_age_plot,
+#           ncol=1,
+#           heights=c(3,1)
+#           )
+# 
+# annotate_figure(combined_figure,
+#                 bottom=text_grob("Richard Martin-Nielsen\nData: Office of Statistics Portal osp.stat.gov.lt", hjust=1, x=1, size=8))
 ```
 
 ```{r vaccine_effectiveness_14d}
