@@ -28,15 +28,6 @@ including in calculations of the unvaccinated population, which influences
 the estimate of the proportional incidence in the unvaccinated population
 and thus the relative incidence in vaccinated populations.
 
-Because the level rate of vaccination among Lithuanians below the age of 20 is
-much lower than in the rest of the population, I also present calculations which
-only consider the population of 20 and above. The vaccine is not available for
-children under the age of 11, and though figures for 18 and 19 year-olds are
-comparable with older adults, the data for vaccination and infection/censoring
-are only available on 20 year increments.
-
-`r paste0("![](https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_", strftime(today(), "%Y%m%d"),".png)")`
-
 ## Data source
 
 These charts are drawn using data published by the
@@ -490,30 +481,6 @@ infection_comparisons %>%
   scale_x_date()
 ```
 
-```{r cases_graph_fractions_adults, message=FALSE, warning=FALSE}
-infection_comparisons_adults %>%
-  group_by(event) %>%
-  mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
-  ungroup() %>%
-  filter(event %in% c("partially", "fully")) %>%
-  #filter(date > ymd("2020-11-01")) %>%
-  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
-  theme_minimal() +
-  geom_line(size=1) +
-  #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Vaccination status",
-                         breaks = c("partially", "fully"),
-                         labels = c("Partially", "Fully")) +
-  theme(legend.position = "bottom") +
-  scale_y_continuous( labels = scales::percent,
-                      sec.axis = sec_axis(~ ., labels = scales::percent)) +
-  labs(title="Lithuania - COVID-19 cases by vaccination status - 20+ only",
-       subtitle="7 day rolling average as fraction of total infections",
-       y="New cases",
-       x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date()
-```
 
 ```{r cases_by_status_proportional}
 infection_comparisons %>%
@@ -542,32 +509,6 @@ infection_comparisons %>%
   scale_x_date()
 ```
 
-```{r cases_by_status_proportional_adults}
-infection_comparisons_adults %>%
-  group_by(event) %>%
-  mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center")*1000 ) %>%
-  ungroup() %>%
-  filter(event %in% c("i_frac_r0", "i_frac_r1", "i_frac_r2", "i_frac_r3")) %>%
-  filter(date > ymd("2021-03-01")) %>%
-  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
-  theme_minimal() +
-  geom_line(size=1) +
-  #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Vaccination status (14 days after...)",
-                         breaks = c("i_frac_r0", "i_frac_r1", "i_frac_r2", "i_frac_r3"),
-                         labels = c("Unvaccinated",
-                                    "First dose",
-                                    "Second dose",
-                                    "Booster")) +
-  theme(legend.position = "bottom") +
-  scale_y_continuous(sec.axis = sec_axis(~ .)) +
-  labs(title="Lithuania - COVID-19 cases by vaccination status",
-       subtitle="7 day average cases per 1000 population with that status",
-       y="New cases",
-       x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date()
-```
 
 ```{r vaccine_effectiveness_7d}
 
@@ -633,6 +574,107 @@ inf_eff_plot / med_age_plot + plot_layout(heights = c(2,1)) +
 #                 bottom=text_grob("Richard Martin-Nielsen\nData: Office of Statistics Portal osp.stat.gov.lt", hjust=1, x=1, size=8))
 ```
 
+
+```{r vaccine_effectiveness_14d}
+
+infection_comparisons %>%
+  group_by(event) %>%
+  mutate(pc_cases_14d_mean = zoo::rollmean(count,k=14, fill=NA, align="center") ) %>%
+  ungroup() %>%
+  filter(event %in% c("ve_vs_r0_r1", "ve_vs_r0_r2", "ve_vs_r0_r3")) %>%
+  filter(date > ymd("2021-03-01")) %>%
+  filter(pc_cases_14d_mean<1) %>%
+  ggplot(aes(x = date, y=pc_cases_14d_mean, colour=event)) +
+  theme_minimal() +
+  geom_line(size=1) +
+  #scale_fill_brewer(palette = "Set2") +
+  scale_colour_viridis_d(name = "Vaccination status (14 days after...)",
+                         breaks = c("ve_vs_r0_r1", "ve_vs_r0_r2", "ve_vs_r0_r3"),
+                         labels = c("First dose",
+                                    "Second dose",
+                                    "Booster")) +
+  theme(legend.position = "bottom") +
+  scale_y_continuous(
+    sec.axis = sec_axis(
+      ~ .,
+      breaks = seq(from = 0, to = 1, by = 0.1),
+      labels = scales::percent),
+    limits = c(0,1),
+    breaks = seq(from = 0, to = 1, by = 0.1),
+    #limits = c(0,15),
+    labels = scales::percent,
+    oob = scales::oob_censor) +
+  labs(title="Lithuania - COVID-19 vaccine effectiveness by vaccination status",
+       subtitle="14 day mean",
+       y="Vaccine effectiveness",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+  scale_x_date()
+```
+
+## Calculations excluding under-20s
+
+Because the level rate of vaccination among Lithuanians below the age of 20 is
+much lower than in the rest of the population, I also present calculations which
+only consider the population of 20 and above. The vaccine is not available for
+children under the age of 11, and though figures for 18 and 19 year-olds are
+comparable with older adults, the data for vaccination and infection/censoring
+are only available on 20 year increments.
+
+`r paste0("![](https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_", strftime(today(), "%Y%m%d"),".png)")`
+
+```{r cases_graph_fractions_adults, message=FALSE, warning=FALSE}
+infection_comparisons_adults %>%
+  group_by(event) %>%
+  mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
+  ungroup() %>%
+  filter(event %in% c("partially", "fully")) %>%
+  #filter(date > ymd("2020-11-01")) %>%
+  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
+  theme_minimal() +
+  geom_line(size=1) +
+  #scale_fill_brewer(palette = "Set2") +
+  scale_colour_viridis_d(name = "Vaccination status",
+                         breaks = c("partially", "fully"),
+                         labels = c("Partially", "Fully")) +
+  theme(legend.position = "bottom") +
+  scale_y_continuous( labels = scales::percent,
+                      sec.axis = sec_axis(~ ., labels = scales::percent)) +
+  labs(title="Lithuania - COVID-19 cases by vaccination status - 20+ only",
+       subtitle="7 day rolling average as fraction of total infections",
+       y="New cases",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+  scale_x_date()
+```
+
+```{r cases_by_status_proportional_adults}
+infection_comparisons_adults %>%
+  group_by(event) %>%
+  mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center")*1000 ) %>%
+  ungroup() %>%
+  filter(event %in% c("i_frac_r0", "i_frac_r1", "i_frac_r2", "i_frac_r3")) %>%
+  filter(date > ymd("2021-03-01")) %>%
+  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
+  theme_minimal() +
+  geom_line(size=1) +
+  #scale_fill_brewer(palette = "Set2") +
+  scale_colour_viridis_d(name = "Vaccination status (14 days after...)",
+                         breaks = c("i_frac_r0", "i_frac_r1", "i_frac_r2", "i_frac_r3"),
+                         labels = c("Unvaccinated",
+                                    "First dose",
+                                    "Second dose",
+                                    "Booster")) +
+  theme(legend.position = "bottom") +
+  scale_y_continuous(sec.axis = sec_axis(~ .)) +
+  labs(title="Lithuania - COVID-19 cases by vaccination status",
+       subtitle="7 day average cases per 1000 population with that status",
+       y="New cases",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+  scale_x_date()
+```
+
 ```{r vaccine_effectiveness_7d_adults}
 
 inf_eff_plot_adults <- infection_comparisons_adults %>%
@@ -681,41 +723,4 @@ inf_eff_plot_adults / med_age_plot + plot_layout(heights = c(2,1)) +
 # 
 # annotate_figure(combined_figure,
 #                 bottom=text_grob("Richard Martin-Nielsen\nData: Office of Statistics Portal osp.stat.gov.lt", hjust=1, x=1, size=8))
-```
-
-```{r vaccine_effectiveness_14d}
-
-infection_comparisons %>%
-  group_by(event) %>%
-  mutate(pc_cases_14d_mean = zoo::rollmean(count,k=14, fill=NA, align="center") ) %>%
-  ungroup() %>%
-  filter(event %in% c("ve_vs_r0_r1", "ve_vs_r0_r2", "ve_vs_r0_r3")) %>%
-  filter(date > ymd("2021-03-01")) %>%
-  filter(pc_cases_14d_mean<1) %>%
-  ggplot(aes(x = date, y=pc_cases_14d_mean, colour=event)) +
-  theme_minimal() +
-  geom_line(size=1) +
-  #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Vaccination status (14 days after...)",
-                         breaks = c("ve_vs_r0_r1", "ve_vs_r0_r2", "ve_vs_r0_r3"),
-                         labels = c("First dose",
-                                    "Second dose",
-                                    "Booster")) +
-  theme(legend.position = "bottom") +
-  scale_y_continuous(
-    sec.axis = sec_axis(
-      ~ .,
-      breaks = seq(from = 0, to = 1, by = 0.1),
-      labels = scales::percent),
-    limits = c(0,1),
-    breaks = seq(from = 0, to = 1, by = 0.1),
-    #limits = c(0,15),
-    labels = scales::percent,
-    oob = scales::oob_censor) +
-  labs(title="Lithuania - COVID-19 vaccine effectiveness by vaccination status",
-       subtitle="14 day mean",
-       y="Vaccine effectiveness",
-       x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date()
 ```
