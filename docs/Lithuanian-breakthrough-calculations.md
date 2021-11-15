@@ -19,6 +19,16 @@ influences the estimate of the proportional incidence in the
 unvaccinated population and thus the relative incidence in vaccinated
 populations.
 
+Because the level rate of vaccination among Lithuanians below the age of
+20 is much lower than in the rest of the population, I also present
+calculations which only consider the population of 20 and above. The
+vaccine is not available for children under the age of 11, and though
+figures for 18 and 19 year-olds are comparable with older adults, the
+data for vaccination and infection/censoring are only available on 20
+year increments.
+
+![](https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_20211115.png)
+
 ## Data source
 
 These charts are drawn using data published by the [Official Statistics
@@ -35,8 +45,14 @@ repo](https://github.com/RichardMN/lt_covid_calcs).
 
 ![](/lt_covid_calcs/images/cases_graph_fractions-1.png)<!-- -->
 
+![](/lt_covid_calcs/images/cases_graph_fractions_adults-1.png)<!-- -->
+
 ![](/lt_covid_calcs/images/cases_by_status_proportional-1.png)<!-- -->
 
+![](/lt_covid_calcs/images/cases_by_status_proportional_adults-1.png)<!-- -->
+
 ![](/lt_covid_calcs/images/vaccine_effectiveness_7d-1.png)<!-- -->
+
+![](/lt_covid_calcs/images/vaccine_effectiveness_7d_adults-1.png)<!-- -->
 
 ![](/lt_covid_calcs/images/vaccine_effectiveness_14d-1.png)<!-- -->

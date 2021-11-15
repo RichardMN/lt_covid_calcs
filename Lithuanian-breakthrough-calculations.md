@@ -35,8 +35,14 @@ repo](https://github.com/RichardMN/lt_covid_calcs).
 
 ![](/lt_covid_calcs/images/cases_graph_fractions-1.png)<!-- -->
 
+![](/lt_covid_calcs/images/cases_graph_fractions_adults-1.png)<!-- -->
+
 ![](/lt_covid_calcs/images/cases_by_status_proportional-1.png)<!-- -->
 
+![](/lt_covid_calcs/images/cases_by_status_proportional_adults-1.png)<!-- -->
+
 ![](/lt_covid_calcs/images/vaccine_effectiveness_7d-1.png)<!-- -->
+
+![](/lt_covid_calcs/images/vaccine_effectiveness_7d_adults-1.png)<!-- -->
 
 ![](/lt_covid_calcs/images/vaccine_effectiveness_14d-1.png)<!-- -->
