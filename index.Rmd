@@ -1,18 +1,17 @@
 ---
 title: "Lithuanian COVID-19 calculations"
 description: |
-  Welcome to the website. I hope you enjoy it!
+  Regularly updated graphs and calculations of Lithuanian COVID-19 data
 site: distill::distill_website
 ---
+date: 2021-11-19
+---
+# Lithuanian COVID calculations
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+This repo contains RMarkdown files to automatically generate graphs which
+present for Lithuania:
 
-# Learn more about creating websites with Distill at:
-# https://rstudio.github.io/distill/website.html
+- [Case and death incidence for COVID-19 for national age cohorts](output/Lithuanian-age-breakdowns)
+- [Comparative incidence by vaccination status and vaccine effectiveness](output/Lithuanian-breakthrough-calculations)
 
-# Learn more about publishing to GitHub Pages at:
-# https://rstudio.github.io/distill/publish_website.html#github-pages
-
-```
 
