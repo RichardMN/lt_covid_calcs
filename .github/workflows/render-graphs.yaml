@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
   schedule:
-    - cron: '12 12 * * *'
+    - cron: '12 10 * * *'
 
 jobs:
   render:
@@ -30,7 +30,7 @@ jobs:
         run: |
           R -e 'install.packages("renv")'
           R -e 'renv::restore()'
-          R -e 'install.packages(c("curl", "httr", "jsonlite", "ggpubr", "lubridate","zoo","readxl","vroom", "patchwork","scales","spatstat"))'
+          R -e 'install.packages(c("curl", "httr", "jsonlite", "ggpubr", "lubridate","zoo","readxl","vroom", "patchwork","scales","spatstat","distill"))'
           R -e 'install.packages(c("remotes", "dplyr", "tidyr", "here", "ggplot2", "roll", "scales", "tools", "rmarkdown"))'
 
         # R -e 'remotes::install_github("epiforecasts/covidregionaldata")'
@@ -39,11 +39,8 @@ jobs:
         run: |
           Rscript -e 'source("render-graphs.R")'
 
-        # GRAPH_PATH=("extra/Lithuania_static_graphs.R", "extra/Generic_static_graphs.R")
-        # Rscript -e 'for (f in commandArgs(TRUE)) if (file.exists(f)) source(f)' ${GRAPH_PATH[*]}
-
       - name: Commit changes
         uses: EndBug/add-and-commit@v7
         with:
-          message: 'Render graph pages for all countries'
+          message: 'Render updated graphs for Lithuania'
           add: 'docs'
