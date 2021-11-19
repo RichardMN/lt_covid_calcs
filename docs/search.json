@@ -21,8 +21,9 @@
       "title": "Lithuanian COVID-19 calculations",
       "description": "Regularly updated graphs and calculations of Lithuanian COVID-19 data\n",
       "author": [],
-      "contents": "\ndate: 2021-11-19\nLithuanian COVID calculations\nThis repo contains RMarkdown files to automatically generate graphs which present for Lithuania:\nCase and death incidence for COVID-19 for national age cohorts\nComparative incidence by vaccination status and vaccine effectiveness\n\n\n\n",
-      "last_modified": "2021-11-19T19:58:02+02:00"
+      "date": "2021-11-19",
+      "contents": "\nLithuanian COVID calculations\nThis website uses RMarkdown files to automatically generate graphs which present for Lithuania:\nCase and death incidence for COVID-19 for national age cohorts\nComparative incidence by vaccination status and vaccine effectiveness\n\n\n\n",
+      "last_modified": "2021-11-19T20:02:12+02:00"
     }
   ],
   "collections": []
