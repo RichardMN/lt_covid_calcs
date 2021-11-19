@@ -51,7 +51,7 @@ figures for 18 and 19 year-olds are comparable with older adults, the
 data for vaccination and infection/censoring are only available on 20
 year increments.
 
-![](https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_20211118.png)
+![](https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_20211119.png)
 
 ![](/lt_covid_calcs/images/cases_graph_fractions_adults-1.png)<!-- -->
 
