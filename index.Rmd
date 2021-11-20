@@ -1,0 +1,17 @@
+---
+title: "Lithuanian COVID-19 calculations"
+description: |
+  Regularly updated graphs and calculations of Lithuanian COVID-19 data
+site: distill::distill_website
+date: 2021-11-19
+---
+
+# Lithuanian COVID calculations
+
+This website uses RMarkdown files to automatically generate graphs which
+present for Lithuania:
+
+- [Case and death incidence for COVID-19 for national age cohorts](age-breakdowns)
+- [Comparative incidence by vaccination status and vaccine effectiveness](breakthrough-calculations)
+
+

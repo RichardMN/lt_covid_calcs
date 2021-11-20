@@ -1,0 +1,17 @@
+name: "Lithuanian COVID-19 calculations"
+title: "Lithuanian COVID-19 calculations"
+description: |
+  Lithuanian COVID-19 calculations
+output_dir: "docs"
+navbar:
+  right:
+    - text: "Home"
+      href: index.html
+output:
+  distill::distill_article:
+    code_folding: true
+    self_contained: false
+author:
+  - name: Richard Martin-Nielsen
+    url: http://richard.martin-nielsen.ca
+repository_url: https://github.com/richardmn/lt_covid_calcs
