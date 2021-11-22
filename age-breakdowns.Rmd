@@ -7,8 +7,11 @@ params:
     input: text
 date: "`r Sys.Date()`"
 output: distill::distill_article
+base_url: https://richardmn.github.io/lt_covid_calcs
+twitter:
+  site: "@rmartinnielsen"
+creative_commons: CC BY
 ---
-# COVID-19 in Lithuania: Age cohort graphs
 
 ## Data source
 
@@ -276,14 +279,14 @@ These charts are inspired by the narrow age cohort graph given by the OSP
 on their [pandemic illustrations
 page](https://osp.stat.gov.lt/pandemijos-iliustracijos):
 
-`r paste0("![](https://osp.stat.gov.lt/documents/10180/8555211/vaiku_atvejai_per14d_100k_", strftime(today(), "%Y%m%d"),".png)")`
+`r paste0("![Figure from https://osp.stat.gov.lt](https://osp.stat.gov.lt/documents/10180/8555211/vaiku_atvejai_per14d_100k_", strftime(today(), "%Y%m%d"),".png){.external}")`
 
 Because the age cohorts given in the two sources used do not align,
 when calculating COVID rates relative to age cohorts, a smaller
 number of larger cohorts is used. It is also possible to extend the graph
 further back into 2021.
 
-```{r cohort_prevalance_cases_cumulative, echo=FALSE}
+```{r cohort_prevalance_cases_cumulative, echo=FALSE, preview=TRUE}
 per_capita_rates %>%
   group_by(cohort) %>%
   mutate(pc_cases_14d = zoo::rollsum(cases_per_100k,k=14, fill=0, align="right") ) %>%
