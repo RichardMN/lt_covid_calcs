@@ -7,6 +7,7 @@ twitter:
   site: "@rmartinnielsen"
 creative_commons: CC BY
 params:
+  download_data: FALSE
   prepared_by:
     label: "Prepared by:"
     value: "Richard Martin-Nielsen"
@@ -272,23 +273,29 @@ download_excel <- function(url, archive, verbose = FALSE,
 
 # Download the data ----
 
-lt_vacc_eff_data <- download_restful(
-  api_call = "https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/COVID_u%C5%BEsikr%C4%97timai_tarp_vakcinuot%C5%B3_ir_nevakcinuot%C5%B3/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json" # nolint
-) %>%
-  rename_with(~ gsub("attributes.","", .x)) %>%
-  mutate(date = as_date(as_datetime(date / 1000)))
-
+if (params$download_data) {
+  lt_vacc_eff_data <- download_restful(
+    api_call = "https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/COVID_u%C5%BEsikr%C4%97timai_tarp_vakcinuot%C5%B3_ir_nevakcinuot%C5%B3/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json" # nolint
+  ) %>%
+    rename_with(~ gsub("attributes.","", .x)) %>%
+    mutate(date = as_date(as_datetime(date / 1000)))
   
-# Download the at risk data table for the beginning of 2021
-#
-# https://ls-osp-sdg.maps.arcgis.com/sharing/rest/content/items/12822ba507864e119d713d14c1971e78/data
-
+  
+  # Download the at risk data table for the beginning of 2021
+  #
+  # https://ls-osp-sdg.maps.arcgis.com/sharing/rest/content/items/12822ba507864e119d713d14c1971e78/data
+  
   initial_state <- download_excel(
     "https://ls-osp-sdg.maps.arcgis.com/sharing/rest/content/items/12822ba507864e119d713d14c1971e78/data",
     sheet = "initial_states_20210101",
     archive = "initial_states",
     transpose = FALSE)
-  
+  save(lt_vacc_eff_data, initial_state,
+       file = "input_data.Rds")
+} else {
+  load("input_data.Rds")
+}
+
 # Data manipulation ----
   
 lt_natl_ve_data <- tibble(lt_vacc_eff_data) %>%
@@ -328,8 +335,8 @@ infection_comparisons_wide <- lt_natl_ve_data %>%
   mutate(
     i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
     i_frac_r1 = (r1i1+r1i2) / r_pop_r1,
-    i_frac_r2 = (r2i2+r2i3) / r_pop_r2,
-    i_frac_r3 = (r3i3) / r_pop_r3
+    i_frac_r2 = if_else(r_pop_r2 >0, (r2i2+r2i3) / r_pop_r2, NA_real_),
+    i_frac_r3 = if_else(r_pop_r3 >0,(r3i3) / r_pop_r3, NA_real_)
   ) %>%
   mutate(
     ve_vs_r0_r1 =  (i_frac_r0 - i_frac_r1)/i_frac_r0,
@@ -411,13 +418,15 @@ mean_age_values <- tibble(lt_vacc_eff_data) %>%
   select(date, r1i1_mdsv, r2i2_mdsv, r1i1_john, r2i2_john) %>%
   unique()
 
+# Join median and mean ages and apply a delta measure ----
+
 infection_ages <- left_join(infection_comparisons_wide, mean_age_values,
                             by=c("date")) %>%
   left_join(median_age_calcs %>%select(date, med_vxd_age), by=c("date")) %>%
   mutate(delta =
-           ifelse(date < ymd("2021-07-01"),
+           ifelse(date < ymd("2021-05-20"),
                   FALSE,
-                  ifelse( date > ymd("2021-08-01"),
+                  ifelse( date > ymd("2021-07-15"),
                           TRUE,
                           NA)))
          
@@ -652,9 +661,15 @@ so becomes less useful after November when boosters become more common.)
 Both the charts using the vaccine effectiveness after a single shot show
 the noisiness of this data - including some values below zero.
 
+Based on the graph shown at 
+https://osp.stat.gov.lt/documents/10180/9098881/Pfizer_Delta_efektyvumas_20210915_v1_JB.pdf
+https://osp.stat.gov.lt/duomenu-apzvalga-2021-09-15
+I estimate that Delta was less than 10% of infections until 20 May 2021
+and more than 90% of infections after 15 July 2021. Measurements for this
+date range will be excluded.
+
 Breaking the data according to a split of Alpha-dominant time period
-(before 1 July 2021) and Delta-dominant periods (after 1 August 2021),
-and discarding dates for the month of July shows separate trends for the
+and Delta-dominant periods we see separate trends for the
 two periods.
 
 ```{r ve_by_age}
@@ -705,19 +720,114 @@ infection_ages %>%
       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") 
 
 infection_ages %>%
-  filter(r2i2_mdsv>0) %>%
-  mutate( r2i2_mdsv = r2i2_mdsv / 7 ) %>%
+  filter(r1i1_mdsv>7) %>%
+  mutate( r1i1_mdsv = r1i1_mdsv / 7 ) %>%
   ggplot(aes(colour=r1i1_john,y=ve_vs_r0_r1,x=r1i1_mdsv)) +
   geom_point() +
   scale_y_continuous(labels = scales::percent_format()) +
-  scale_color_continuous(name="Percent Janssen") +
+  scale_x_continuous() +
+  scale_color_continuous(name = "Percent Janssen vaccinations among infected") +
   geom_smooth() +
       labs(
       title="Lithuania - COVID-19 fading vaccine effectiveness",
       subtitle = "Compared with time since first dose",
       y="Vaccine effectiveness",
-      x="Weeks since first dose",
+      x="Mean weeks since first dose",
       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") 
+
+
+```
+
+## Bin calculations by weeks as in _Andrews et al._
+
+```{r binned_averages}
+
+infn_age_bins <- infection_ages %>%
+  mutate(
+    r2i2_mdsv_weeks = r2i2_mdsv / 7,
+    med_vxd_age_weeks = med_vxd_age / 7,
+    mdsv_age_bin = 
+      case_when(
+        r2i2_mdsv_weeks <= 1 ~ "week 1",
+        r2i2_mdsv_weeks <= 9 ~ "2-9 weeks",
+        r2i2_mdsv_weeks <= 14 ~ "10-14 weeks",
+        r2i2_mdsv_weeks <= 19 ~ "15-19 weeks",
+        TRUE ~ "20+ weeks"
+      ),
+    md_vxd_age_bin = 
+      case_when(
+        med_vxd_age_weeks <= 1 ~ "week 1",
+        med_vxd_age_weeks <= 9 ~ "2-9 weeks",
+        med_vxd_age_weeks <= 14 ~ "10-14 weeks",
+        med_vxd_age_weeks <= 19 ~ "15-19 weeks",
+        TRUE ~ "20+ weeks"
+      )
+    ) %>%
+  mutate(
+    md_vxd_age_bin = 
+      factor(if_else(is.na(med_vxd_age), NA_character_, md_vxd_age_bin),
+             c("week 1",  "2-9 weeks", "10-14 weeks", "15-19 weeks", "20+ weeks"),
+             ordered=TRUE),
+         mdsv_age_bin = factor(if_else(is.na(r2i2_mdsv), NA_character_, mdsv_age_bin),
+             c("week 1",  "2-9 weeks", "10-14 weeks", "15-19 weeks", "20+ weeks"),
+             ordered=TRUE)
+         )
+
+binned_ve_calcs_r2 <- infn_age_bins %>%
+  filter(!is.na(delta), !is.na(mdsv_age_bin)) %>%
+  group_by(delta,mdsv_age_bin) %>%
+  summarise(mean(ve_vs_r0_r2), sd(ve_vs_r0_r2), sd(r_pop_r0))
+
+infn_age_bins %>% group_by(mdsv_age_bin, delta) %>%
+  count()
+
+library(boot)
+mean_ve <- function(formula, data, indices) {
+  d <- data[indices,] # allows boot to select sample 
+  return(mean( d))
+  #return(summary(fit)$r.square)
+} 
+m_ve <- function(d,w) mean(d$ve_vs_r0_r2)
+boot_ve <- boot(data=select(infn_age_bins, date, ve_vs_r0_r2,delta, r2i2_mdsv)%>%filter(r2i2_mdsv > 20,delta, !is.na(ve_vs_r0_r2)), statistic=m_ve, R=1000)
+boot.ci(boot_ve)
+knitr::kable(binned_ve_calcs_r2)
+```
+
+## Comparison with UK data
+
+```{r comparison_with_UK}
+
+uk_values <- read_excel("UK Paper Tables.xlsx", sheet= "Table 1") %>%
+  mutate(Cohort
+         = factor(Cohort,
+                  c("week 1",  "2-9 weeks", "10-14 weeks", "15-19 weeks", "20+ weeks"),
+                  ordered=TRUE),
+         `Age group`
+         = factor(`Age group`,
+                  c("16+",  "16-39", "40-64", "65+"),
+                  ordered=TRUE))
+uk_values %>%
+  mutate(Value = Value/100) %>%
+  pivot_wider(id_cols = c("Vaccine", "Age group", "Cohort"),
+              names_from = "Estimate",
+              values_from = "Value"
+              ) %>%
+  ggplot(aes(x=Cohort, y=Centre, ymin=Lower, ymax=Upper)) +
+  #geom_point() +
+  scale_y_continuous(limits=c(0,1),labels = scales::percent) +
+  geom_crossbar(size=0.2,width=0.25) +
+  #geom_errorbar(mapping=aes(ymin=Lower,ymax=Upper)) +
+  facet_grid(rows=vars(Vaccine), cols=vars(`Age group`)) +
+  theme(plot.caption=element_text(size = rel(0.5)),
+          plot.title=element_text(size = rel(1.2)),
+          axis.text.x=element_text(size = rel(0.4)) ) +
+  labs(
+      title="Vaccine effectiveness against symptomatic disease from Delta",
+      subtitle = "UK data from Nick Andrews et al.",
+      y="Vaccine effectiveness [%]",
+      x="Weeks since second dose",
+      caption="Reproduced with data from \"Vaccine effectiveness and duration of protection of Comirnaty, Vaxzevria and Spikevax against mild and severe COVID-19 in the UK\", Table 1\nNick Andrews, Elise Tessier, Julia Stowe, Charlotte Gower, Freja Kirsebom, Ruth Simmons, Eileen Gallagher,\nMeera Chand, Kevin Brown, Shamez N Ladhani, Mary Ramsay, Jamie Lopez Bernal")
+
 
 
 ```

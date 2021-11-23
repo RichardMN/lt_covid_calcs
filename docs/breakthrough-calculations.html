@@ -93,8 +93,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <link rel="license" href="https://creativecommons.org/licenses/by/4.0/"/>
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2021-11-21"/>
-  <meta property="article:created" itemprop="dateCreated" content="2021-11-21"/>
+  <meta property="article:published" itemprop="datePublished" content="2021-11-22"/>
+  <meta property="article:created" itemprop="dateCreated" content="2021-11-22"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Lithuanian COVID-19 calculations: Vaccination status and incidence, vaccine effectiveness "/>
@@ -111,7 +111,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","base_url","twitter","creative_commons","params"]}},"value":[{"type":"character","attributes":{},"value":["Vaccination status and incidence, vaccine effectiveness "]},{"type":"character","attributes":{},"value":["2021-11-21"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"character","attributes":{},"value":["https://richardmn.github.io/lt_covid_calcs"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["site"]}},"value":[{"type":"character","attributes":{},"value":["@rmartinnielsen"]}]},{"type":"character","attributes":{},"value":["CC BY"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["prepared_by"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["label","value","input"]}},"value":[{"type":"character","attributes":{},"value":["Prepared by:"]},{"type":"character","attributes":{},"value":["Richard Martin-Nielsen"]},{"type":"character","attributes":{},"value":["text"]}]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","base_url","twitter","creative_commons","params"]}},"value":[{"type":"character","attributes":{},"value":["Vaccination status and incidence, vaccine effectiveness "]},{"type":"character","attributes":{},"value":["2021-11-22"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"character","attributes":{},"value":["https://richardmn.github.io/lt_covid_calcs"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["site"]}},"value":[{"type":"character","attributes":{},"value":["@rmartinnielsen"]}]},{"type":"character","attributes":{},"value":["CC BY"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["prepared_by"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["label","value","input"]}},"value":[{"type":"character","attributes":{},"value":["Prepared by:"]},{"type":"character","attributes":{},"value":["Richard Martin-Nielsen"]},{"type":"character","attributes":{},"value":["text"]}]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2059,7 +2059,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Vaccination status and incidence, vaccine effectiveness ","authors":[],"publishedDate":"2021-11-21T00:00:00.000+02:00"}
+{"title":"Vaccination status and incidence, vaccine effectiveness ","authors":[],"publishedDate":"2021-11-22T00:00:00.000+02:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2466,13 +2466,20 @@ Show code
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>r1i1_mdsv</span>, <span class='va'>r2i2_mdsv</span>, <span class='va'>r1i1_john</span>, <span class='va'>r2i2_john</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='op'>)</span>
 
+<span class='co'># Join median and mean ages and apply a delta measure ----</span>
+<span class='co'># Based on the graph shown at </span>
+<span class='co'># https://osp.stat.gov.lt/documents/10180/9098881/Pfizer_Delta_efektyvumas_20210915_v1_JB.pdf</span>
+<span class='co'># https://osp.stat.gov.lt/duomenu-apzvalga-2021-09-15</span>
+<span class='co'># I estimate that Delta was less than 10% of infections until 20 May 2021</span>
+<span class='co'># and more than 90% of infections after 15 July 2021. Measurements for this</span>
+<span class='co'># date range will be excluded</span>
 <span class='va'>infection_ages</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>infection_comparisons_wide</span>, <span class='va'>mean_age_values</span>,
                             by<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"date"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>median_age_calcs</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>med_vxd_age</span><span class='op'>)</span>, by<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"date"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>delta <span class='op'>=</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>date</span> <span class='op'>&lt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-07-01"</span><span class='op'>)</span>,
+           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>date</span> <span class='op'>&lt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-05-20"</span><span class='op'>)</span>,
                   <span class='cn'>FALSE</span>,
-                  <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span> <span class='va'>date</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-08-01"</span><span class='op'>)</span>,
+                  <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span> <span class='va'>date</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-07-15"</span><span class='op'>)</span>,
                           <span class='cn'>TRUE</span>,
                           <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
          
@@ -2814,7 +2821,7 @@ Show code
 <p>First, here is a chart from the OSP showing the vaccination status by age group.</p>
 <p>The vaccine is not available for children under the age of 11, and though figures for 18 and 19 year-olds are comparable with older adults, the data for vaccination and infection/censoring are only available on 20 year increments.</p>
 <figure>
-<img src="https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_20211121.png" class="external" alt="Figure from https://osp.stat.gov.lt" /><figcaption aria-hidden="true">Figure from <a href="https://osp.stat.gov.lt" class="uri">https://osp.stat.gov.lt</a></figcaption>
+<img src="https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_20211122.png" class="external" alt="Figure from https://osp.stat.gov.lt" /><figcaption aria-hidden="true">Figure from <a href="https://osp.stat.gov.lt" class="uri">https://osp.stat.gov.lt</a></figcaption>
 </figure>
 <div class="layout-chunk" data-layout="l-body">
 <details>
