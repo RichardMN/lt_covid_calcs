@@ -2643,7 +2643,6 @@ Show code
 <p>OSP provides for each data, the average ages of vaccinations among those who are infected after two doses (<code>r1i1_mdsv</code> and <code>r2i2_mdsv</code>), and I also have a rough calculation of the median age of a double vaccination. (This calculation does not account for removing people who are infected or “censored” from the population, nor for those who have booster shots, so becomes less useful after November when boosters become more common.)</p>
 <p>Both the charts using the vaccine effectiveness after a single shot show the noisiness of this data - including some values below zero.</p>
 <p>Based on the graph given in an OSP analysis of vaccine effectiveness for a specific cohort<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> I estimate that Delta was less than 10% of infections until 20 May 2021 and more than 90% of infections after 15 July 2021. Measurements for this date range will be excluded.</p>
-<p>Breaking the data according to a split of Alpha-dominant time period and Delta-dominant periods we see separate trends for the two periods.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -2669,6 +2668,7 @@ Show code
 </details>
 <p><img src="breakthrough-calculations_files/figure-html5/ve_by_med_age_r2-1.png" width="624" /></p>
 </div>
+<p>Breaking the data according to a split of Alpha-dominant time period and Delta-dominant periods we see separate trends for the two periods.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -2752,7 +2752,7 @@ Show code
 <p>A UK preprint<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> analyses vaccine effectiveness in the UK for three vaccines against symptomatic disease, hospitalisation and death.</p>
 <p>The UK study’s approach cannot be replicated with the available open data for Lithuania, but the overall results for vaccine effectiveness in protection from disease may be compared, with some limitations based on the differing data available.</p>
 <h3 id="lithuanian-data-and-approximations">Lithuanian data and approximations</h3>
-<p>For each day, the mean days since vaccination for all those fall ill having had two doses of vaccine.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> This value varies compared with the median number of days since vaccination for the entire vaccinated population, which can also be calculated from available open data. This is used to assign all of the cases for a particular day into one of the groups, approximating all the cases by their mean.</p>
+<p>For each day, Lithuania provides the mean days since vaccination for all those fall ill more than 14 days after having had two doses of vaccine.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> This value varies compared with the median number of days since vaccination for the entire vaccinated population, which can also be calculated from available open data. This is used to assign all of the cases for a particular day into one of the groups, approximating all the cases by their mean.</p>
 <p>Lithuania does not release data differentiating between cases in people vaccinated with one vaccine or another. There is a temporal trend (individuals vaccinated earlier are more likely to be vaccinated with Vaxzevria than Comirnaty) and there are specific occupation-related and age-related biases, but there is no way to usefully “guess” the vaccine make-up among cases of any particular day.</p>
 <p>Lithuania does provide age disaggregated data so it would be possible to make comparisons based on age cohorts but the mean days since vaccination figure is <em>not</em> disaggregated, meaning that the mean value may mask significant variance among age groups.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -2953,7 +2953,10 @@ Show code
 </code></pre>
 </div>
 </details>
-<img src="breakthrough-calculations_files/figure-html5/comparison_with_UK-1.png" width="624" />
+<p><img src="breakthrough-calculations_files/figure-html5/comparison_with_UK-1.png" width="624" /></p>
+</div>
+<p>This gives results for four different overlapping age groups. The 16+ has the best overlap with available Lithuanian data.</p>
+<div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
 Show code
@@ -2984,7 +2987,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/comparison_with_UK-2.png" width="624" /></p>
+<p><img src="breakthrough-calculations_files/figure-html5/uk_16_and_older-1.png" width="624" /></p>
 </div>
 <p>Finally the comparison can be between Lithuanian data for all age groups with UK results for individuals 16+ using one of the two vaccines most commonly used in Lithuania.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -3022,7 +3025,7 @@ Show code
         legend.position <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>
       title<span class='op'>=</span><span class='st'>"Vaccine effectiveness against Delta in Lithuania and the UK"</span>,
-      subtitle <span class='op'>=</span> <span class='st'>"UK: Comirnaty and Vaxzevria protection against symptomatic disease\nLithuania: Aggregated mix (mainly Vaxevria &amp; Comirnaty) against confirmed cases"</span>,
+      subtitle <span class='op'>=</span> <span class='st'>"UK: Comirnaty and Vaxzevria protection against symptomatic disease\nLithuania: Aggregated mix (mainly Vaxzevria &amp; Comirnaty) against confirmed cases"</span>,
       y<span class='op'>=</span><span class='st'>"Vaccine effectiveness [%]"</span>,
       x<span class='op'>=</span><span class='st'>"Weeks since second dose"</span>,
       caption<span class='op'>=</span><span class='st'>"UK data from \"Vaccine effectiveness and duration of protection of Comirnaty, Vaxzevria and Spikevax against mild and severe COVID-19 in the UK\", Table 1\nNick Andrews, Elise Tessier, Julia Stowe, Charlotte Gower, Freja Kirsebom, Ruth Simmons, Eileen Gallagher,\nMeera Chand, Kevin Brown, Shamez N Ladhani, Mary Ramsay, Jamie Lopez Bernal\nLithuania data from the Official Statistics Portal"</span><span class='op'>)</span>
@@ -3032,8 +3035,8 @@ Show code
 <p><img src="breakthrough-calculations_files/figure-html5/comparison_graph_uk_lt-1.png" width="624" /></p>
 </div>
 <h3 id="comments-on-the-comparison">Comments on the comparison</h3>
-<p>Lithuanian figures almost all fall between the UK’s vaccine-specific values for the two vaccines in use, reflecting the mix of vaccines in use in the Lithuanian population (and that this mix is masked by aggregation of the open data available). That the figures for the 20+ weeks cohort are below the UK’s Vaxzevria estimate may reflect that Lithuania used more Vaxzevria earlier in 2021, meaning these vaccinations make up a much larger proportion of individuals with a larger mean days since vaccination figure, and Lithuania did not extend the spacing between doses of Vaxzevria.</p>
 <p>Lithuania did not (unlike the UK and Canada) extend the spacing between first and second doses of Vaxzevria or other vaccines so even if the data were available to differentiate vaccine effectiveness for the different vaccines in use, the resulting effectiveness in Lithuania probably differs because of this difference in how the same vaccines were administered.</p>
+<p>Lithuanian figures almost all fall between the UK’s vaccine-specific values for the two vaccines in use, reflecting the mix of vaccines in use in the Lithuanian population (and that this mix is masked by aggregation of the open data available). That the figures for the 20+ weeks cohort are below the UK’s Vaxzevria estimate may reflect that Lithuania used more Vaxzevria earlier in 2021, meaning these vaccinations make up a much larger proportion of individuals with a larger mean days since vaccination figure, and Lithuania did not extend the spacing between doses of Vaxzevria.</p>
 <p>Lithuania’s vaccination rate for under 18 is very low (and zero below 12). It is not clear whether this comparison would be improved by excluding all Lithuanians under 20.</p>
 <h2 id="calculations-excluding-under-20s">Calculations excluding under-20s</h2>
 <p>Because the level rate of vaccination among Lithuanians below the age of 20 is much lower than in the rest of the population, I also present calculations which only consider the population of 20 and above.</p>
@@ -3316,7 +3319,7 @@ Show code
 </colgroup>
 <thead>
 <tr class="header">
-<th>second character of the character pair (letter)</th>
+<th>second character of the character pair (number)</th>
 <th></th>
 </tr>
 </thead>
@@ -3345,7 +3348,7 @@ Show code
 <p>Footnotes:</p>
 <p>* The effect of the vaccine is considered to start on day 14 from the actual date of vaccination, so in this table describing the effectiveness of the vaccines, the person is considered unvaccinated on the actual day of the first vaccination (as well as on the thirteenth day after the first vaccination). The same principle applies to the second and third doses of the vaccine: they take effect on the 14th day after the actual date of the vaccination.</p>
 <p>** unsupervised persons (without ‘follow-up’, ‘censored’), e.g. due to emigration, lost contact, death, etc.</p>
-<p>*** calculated for all municipalities, all genders, all age groups in total (for confidentiality)|</p>
+<p>*** calculated for all municipalities, all genders, all age groups in total (for confidentiality)</p>
 <h2 class="appendix" id="dataset-description-lithuanian-original">Dataset description (Lithuanian original)</h2>
 <p>Lentelė yra skirta užsikrėtimų dažniams stebėti keturiose Lietuvos gyventojų grupėse: neskiepytųjų bei skiepytųjų viena/dviem/trim vakcinos dozėmis. Lentelės stulpeliai aprašo, kiek kiekvienos rūšies įvykių įvyko konkrečią dieną. Iš viso yra aprašoma 17 įvykių. Įvykiai gali įvykti tik su iki tol dar niekada neužsikrėtusiais Lietuvos gyventojais. Įvykių stebėjimas prasideda nuo 2021 metų sausio 1 dienos. Lentelė yra agreguota pagal datą, savivaldybę (60 vnt), lytį (2 vnt), amžiaus grupę (8 vnt), tad kiekviena eilutė aprašo įvykių skaičių, kuris nutiko konkrečią datą konkrečios savivaldybės konkrečios lyties konkrečios amžiaus grupės gyventojams.</p>
 <p>Šios lentelės neatsiejama dalis yra pagalbinė lentelė “Pradinės būsenos, 2021-01-01 dieną”, kuri aprašo asmenų, galinčių užsikrėsti skaičių 2021-01-01 dienos pradžioje. Tik turint šias abi lenteles įmanoma suskaičiuoti užsikrėtimų dažnį (normalizuotą dieninį užsikrėtimų skaičių) padieniui, iš kurio galima daryti preliminarias išvadas apie vakcinų efektyvumą.</p>
@@ -3493,10 +3496,20 @@ Show code
 <td>c</td>
 <td>‘censored’; asmenys, kurie nėra užsikrėtę ir negali užsikrėsti (**)</td>
 </tr>
-<tr class="even">
-<td>antras simbolių poros simbolis (skaičius):</td>
-<td></td>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>antras simbolių poros simbolis (skaičius):</th>
+<th></th>
 </tr>
+</thead>
+<tbody>
 <tr class="odd">
 <td>0</td>
 <td>asmenys, kurie konkrečią dieną dar yra neskiepyti arba yra paskiepyti labai neseniai (&lt;14 d. eigoje) *</td>
@@ -3529,7 +3542,7 @@ Show code
 <ol>
 <li id="fn1" role="doc-endnote"><p> <a href="https://osp.stat.gov.lt/documents/10180/9098881/Pfizer_Delta_efektyvumas_20210915_v1_JB.pdf" class="uri">https://osp.stat.gov.lt/documents/10180/9098881/Pfizer_Delta_efektyvumas_20210915_v1_JB.pdf</a>, accessed from <a href="https://osp.stat.gov.lt/duomenu-apzvalga-2021-09-15" class="uri">https://osp.stat.gov.lt/duomenu-apzvalga-2021-09-15</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2" role="doc-endnote"><p>Vaccine effectiveness and duration of protection of Comirnaty, Vaxzevria and Spikevax against mild and severe COVID-19 in the UK”, by Nick Andrews, Elise Tessier, Julia Stowe, Charlotte Gower, Freja Kirsebom, Ruth Simmons, Eileen Gallagher, Meera Chand, Kevin Brown, Shamez N Ladhani, Mary Ramsay, Jamie Lopez Bernal, doi: <a href="https://doi.org/10.1101/2021.09.15.21263583" class="uri">https://doi.org/10.1101/2021.09.15.21263583</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3" role="doc-endnote"><p>This is encoded as <code>r2i2_mdsv</code><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>This is the <code>r2i2_mdsv</code> column.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4" role="doc-endnote"><p>Vaccine effectiveness and duration of protection of Comirnaty, Vaxzevria and Spikevax against mild and severe COVID-19 in the UK”, by Nick Andrews, Elise Tessier, Julia Stowe, Charlotte Gower, Freja Kirsebom, Ruth Simmons, Eileen Gallagher, Meera Chand, Kevin Brown, Shamez N Ladhani, Mary Ramsay, Jamie Lopez Bernal, doi: <a href="https://doi.org/10.1101/2021.09.15.21263583" class="uri">https://doi.org/10.1101/2021.09.15.21263583</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5" role="doc-endnote"><p><a href="https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/1fd352a1c4534afe8ff87c564c0724c0_0/about" class="uri">https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/1fd352a1c4534afe8ff87c564c0724c0_0/about</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>

@@ -572,10 +572,6 @@ I estimate that Delta was less than 10% of infections until 20 May 2021
 and more than 90% of infections after 15 July 2021. Measurements for this
 date range will be excluded.
 
-Breaking the data according to a split of Alpha-dominant time period
-and Delta-dominant periods we see separate trends for the
-two periods.
-
 ```{r ve_by_med_age_r2}
 infection_ages %>%
   filter(r2i2_mdsv>0, !is.na(delta)) %>%
@@ -592,6 +588,10 @@ infection_ages %>%
       x="Weeks since second dose (total population)",
       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt")
 ```
+
+Breaking the data according to a split of Alpha-dominant time period
+and Delta-dominant periods we see separate trends for the
+two periods.
 
 ```{r ve_by_mdsv_r2}
 infection_ages %>%
@@ -668,8 +668,9 @@ with some limitations based on the differing data available.
 
 ### Lithuanian data and approximations
 
-For each day, the mean days since vaccination for all those fall ill having
-had two doses of vaccine.^[This is encoded as `r2i2_mdsv`] This value varies
+For each day, Lithuania provides the mean days since vaccination
+for all those fall ill more than 14 days after having
+had two doses of vaccine.^[This is the `r2i2_mdsv` column.] This value varies
 compared with the median number of days since vaccination for the entire vaccinated
 population, which can also be calculated from available open data. This is used to
 assign all of the cases for a particular day into one of the groups, approximating all
@@ -822,8 +823,12 @@ uk_values %>%
       y="Vaccine effectiveness [%]",
       x="Weeks since second dose",
       caption="Reproduced with data from \"Vaccine effectiveness and duration of protection of Comirnaty, Vaxzevria and Spikevax against mild and severe COVID-19 in the UK\", Table 1\nNick Andrews, Elise Tessier, Julia Stowe, Charlotte Gower, Freja Kirsebom, Ruth Simmons, Eileen Gallagher,\nMeera Chand, Kevin Brown, Shamez N Ladhani, Mary Ramsay, Jamie Lopez Bernal")
+```
 
+This gives results for four different overlapping age groups. The 16+ has the best overlap
+with available Lithuanian data.
 
+```{r uk_16_and_older}
 uk_values %>%
   mutate(Value = Value/100) %>%
   filter(`Age group`=="16+") %>%
@@ -892,6 +897,13 @@ uk_values %>%
 
 ### Comments on the comparison
 
+
+Lithuania did not (unlike the UK and Canada) extend the spacing between first and second
+doses of Vaxzevria or other vaccines so even if the data were available to differentiate
+vaccine effectiveness for the different vaccines in use, the resulting effectiveness
+in Lithuania probably differs because of this difference in how the same vaccines were
+administered.
+
 Lithuanian figures almost all fall between the UK's vaccine-specific values
 for the two vaccines
 in use, reflecting the mix of vaccines in use in the Lithuanian population (and that this
@@ -900,12 +912,6 @@ cohort are below the UK's Vaxzevria estimate may reflect that Lithuania used
 more Vaxzevria earlier in 2021, meaning these vaccinations make up a much larger proportion
 of individuals with a larger mean days since vaccination figure, and Lithuania did
 not extend the spacing between doses of Vaxzevria.
-
-Lithuania did not (unlike the UK and Canada) extend the spacing between first and second
-doses of Vaxzevria or other vaccines so even if the data were available to differentiate
-vaccine effectiveness for the different vaccines in use, the resulting effectiveness
-in Lithuania probably differs because of this difference in how the same vaccines were
-administered.
 
 Lithuania's vaccination rate for under 18 is very low (and zero below 12). It is not
 clear whether this comparison would be improved by excluding all Lithuanians under 20.
@@ -1075,7 +1081,7 @@ Column naming logic:
 |i | 'infected'; persons who are infected (first positive diagnostic test)|
 |c | 'censored'; persons who are not and cannot be infected (**)|
 
-|second character of the character pair (letter)||
+|second character of the character pair (number)||
 |------|-------|
 |  0 | persons who have not yet been vaccinated on a given day or have been vaccinated very recently (<in the course of 14 days) *|
 |  1 | persons who have already been vaccinated on a given day 14 days after the first dose or who have received a second dose very recently (<in the course of 14 days) *|
@@ -1083,7 +1089,7 @@ Column naming logic:
 |  3 | persons who have already 14 days since the third dose of the vaccine on a given day *|
 
 
-![Diagram from the OSP, annotated in English](open_vakc_nevakc_atvejai_en.png)
+![Figure from the OSP, annotated in English](open_vakc_nevakc_atvejai_en.png)
 
 Footnotes:
 
@@ -1091,7 +1097,7 @@ Footnotes:
   
  ** unsupervised persons (without 'follow-up', 'censored'), e.g. due to emigration, lost contact, death, etc.
  
-*** calculated for all municipalities, all genders, all age groups in total (for confidentiality)|
+*** calculated for all municipalities, all genders, all age groups in total (for confidentiality)
 
 ## Dataset description (Lithuanian original) {.appendix}
 
@@ -1141,7 +1147,9 @@ Stulpelių pavadinimo sudarymo logika:
 |  r | 'at risk'; asmenys, kurie gali užsikrėsti (t.y., tai dar neatsitiko anksčiau)|
 |i | 'infected'; asmenys, kurie yra užsikrėtę (pirmas teigiamas diagnostinis testas)|
 |c | 'censored'; asmenys, kurie nėra užsikrėtę ir negali užsikrėsti (**)|
+
 |antras simbolių poros simbolis (skaičius):||
+|--------|-----------|
 |  0 |asmenys, kurie konkrečią dieną dar yra neskiepyti arba yra paskiepyti labai neseniai (<14 d. eigoje) *|
 |  1 | asmenys, kuriems konkrečią dieną nuo pirmos skiepo dozės jau yra praėję 14 dienų, arba jie yra paskiepyti antra doze labai neseniai (<14 d. eigoje) *|
 |  2 | asmenys, kuriems konkrečią dieną nuo antros skiepo dozės jau yra praėję 14 dienų, arba jie yra paskiepyti trečia doze labai neseniai (<14 d. eigoje) *|
@@ -1150,7 +1158,7 @@ Stulpelių pavadinimo sudarymo logika:
 
 Detali lentelės turinio paaiškinimo logika iliustracijoje:
 
-![From OSP](open_vakc_nevakc_atvejai.png)
+![Figure from OSP](open_vakc_nevakc_atvejai.png)
 
 Išnašos:
 
