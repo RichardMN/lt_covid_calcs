@@ -15,3 +15,4 @@ author:
   - name: Richard Martin-Nielsen
     url: http://richard.martin-nielsen.ca
 repository_url: https://github.com/richardmn/lt_covid_calcs
+exclude: ["*.Rds"]
