@@ -201,90 +201,26 @@ if (params$download_data) {
 # Data manipulation ----
 
 lt_natl_ve_data <- tibble(lt_vacc_eff_data) %>%
-  left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
   #select(-object_id) %>%
   group_by(date, sex, age_gr) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
+  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE))) %>%
   ungroup()
 
 lt_natl_ve_data_adults <- tibble(lt_vacc_eff_data) %>%
-  left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
   #select(-object_id) %>%
   filter(age_gr != "0-19") %>%
   group_by(date, sex, age_gr) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
+  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE))) %>%
   ungroup()
-
-r0_init_cohorts <- tibble(initial_state) %>%
-  group_by(sex, age_gr) %>%
-  summarise(r0 = sum(at_risk))
 
 r0_init <- sum(initial_state$at_risk)
 r0_init_adults <- sum(initial_state %>%
                           filter(age_gr != "0-19") %>%
                         pull(at_risk))
 
-calculate_ve <-
-  function(.data) {
-    #browser()
-    if (dplyr::is_grouped_df(.data)) {
-      return(dplyr::do(.data, calculate_ve(.)))
-    }
-    #message(str(.data))
-  # calculate populations in each category
-  mutate(.data, 
-    censored = r0c0+r0c1+r1c1+r1c2+r2c2+r2c3+r3c3, # per day
-    infected = r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3, # per day
-    r_pop_r0 = r0_init - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
-    r_pop_r1 = cumsum(r0r1-r1r2-r1i1-r1c1-r1i2-r1c2),
-    r_pop_r2 = cumsum(r1r2-r2r3-r2i2-r2c2-r2i3-r2c3),
-    r_pop_r3 = cumsum(r2r3-r3c3-r3i3),
-) %>%
-  # fractions of each population infected
-  mutate(
-    i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
-    i_frac_r1 = (r1i1+r1i2) / r_pop_r1,
-    i_frac_r2 = if_else(r_pop_r2 >0, (r2i2+r2i3) / r_pop_r2, NA_real_),
-    i_frac_r3 = if_else(r_pop_r3 >0,(r3i3) / r_pop_r3, NA_real_)
-  ) %>%
-  mutate(
-    ve_vs_r0_r1 =  (i_frac_r0 - i_frac_r1)/i_frac_r0,
-    ve_vs_r0_r2 = (i_frac_r0 - i_frac_r2)/i_frac_r0,
-    ve_vs_r0_r3 = if_else(r_pop_r3 != 0,(i_frac_r0 - i_frac_r3)/i_frac_r0, NA_real_)
-  )
-}
-
-inf_comp_wide <- calculate_ve(
-  lt_natl_ve_data %>%
-    #filter(date < "2021-01-15") %>%
-    group_by(date) %>%
-    summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
-    mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-           fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
-    ungroup() )
-  
-inf_comp_cohort_wide <- calculate_ve(
-  lt_natl_ve_data %>%
-    mutate(month = month(date)) %>%
-    group_by(month, age_gr, sex) %>%
-        summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
-    mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-           fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
-    ungroup()
-)
-
-# inf_comp_cohort_wide %>%
-#   filter(month>=3) %>%
-#   ggplot(aes(x=month, y=ve_vs_r0_r2, colour=age_gr, shape=sex)) + 
-#   geom_jitter() +
-#   geom_line() +
-#   scale_y_continuous(limits=c(0,1), labels = scales::percent)
-# 
-# inf_comp_cohort_wide %>% ggplot(aes(x=month, y=ve_vs_r0_r2, colour=sex)) + geom_jitter() + facet_grid(rows=vars(age_gr))
-
-infection_comparisons_wide <- lt_natl_ve_data %>% #filter(date < "2021-01-15") %>%
+infection_comparisons_wide <- lt_natl_ve_data %>%
   group_by(date) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
+  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE))) %>%
   mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
          fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
   ungroup() %>%
@@ -292,11 +228,11 @@ infection_comparisons_wide <- lt_natl_ve_data %>% #filter(date < "2021-01-15") %
   mutate(
     censored = r0c0+r0c1+r1c1+r1c2+r2c2+r2c3+r3c3, # per day
     infected = r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3, # per day
-    #r_pop = r0_init - cumsum(censored + infected),
-    r_pop_r0 = r0_init - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
+    r_pop = r0_init - cumsum(censored + infected),
     r_pop_r1 = cumsum(r0r1-r1r2-r1i1-r1c1-r1i2-r1c2),
     r_pop_r2 = cumsum(r1r2-r2r3-r2i2-r2c2-r2i3-r2c3),
-    r_pop_r3 = cumsum(r2r3-r3c3-r3i3)) %>%
+    r_pop_r3 = cumsum(r2r3-r3c3-r3i3),
+    r_pop_r0 = r0_init - r_pop_r1 - r_pop_r2 - r_pop_r3) %>%
   # fractions of each population infected
   mutate(
     i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
@@ -320,11 +256,11 @@ infection_comparisons_wide_adults <- lt_natl_ve_data_adults %>%
   mutate(
     censored = r0c0+r0c1+r1c1+r1c2+r2c2+r2c3+r3c3, # per day
     infected = r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3, # per day
-    #r_pop = r0_init_adults - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
-    r_pop_r0 = r0_init_adults - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
+    r_pop = r0_init_adults - cumsum(censored + infected),
     r_pop_r1 = cumsum(r0r1-r1r2-r1i1-r1c1-r1i2-r1c2),
     r_pop_r2 = cumsum(r1r2-r2r3-r2i2-r2c2-r2i3-r2c3),
-    r_pop_r3 = cumsum(r2r3-r3c3-r3i3)) %>%
+    r_pop_r3 = cumsum(r2r3-r3c3-r3i3),
+    r_pop_r0 = r0_init_adults - r_pop_r1 - r_pop_r2 - r_pop_r3) %>%
   # fractions of each population infected
   mutate(
     i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
@@ -968,13 +904,14 @@ vaccine effectiveness for the different vaccines in use, the resulting effective
 in Lithuania probably differs because of this difference in how the same vaccines were
 administered.
 
-Lithuanian figures all fall between the UK's vaccine-specific values
+Lithuanian figures almost all fall between the UK's vaccine-specific values
 for the two vaccines
 in use, reflecting the mix of vaccines in use in the Lithuanian population (and that this
-mix is masked by aggregation of the open data available). Vaxzevria was used much more
-earlier in 2021 than Comirnaty, meaning that "older" vaccinations are more likely to
-be with Vaxzevria, which may explain why the Lithuanian data for 20+ weeks
-are closer to the the UK Vaxzevria values than the Comirnaty value.
+mix is masked by aggregation of the open data available). That the figures for the 20+ weeks
+cohort are below the UK's Vaxzevria estimate may reflect that Lithuania used 
+more Vaxzevria earlier in 2021, meaning these vaccinations make up a much larger proportion
+of individuals with a larger mean days since vaccination figure, and Lithuania did
+not extend the spacing between doses of Vaxzevria.
 
 Lithuania's vaccination rate for under 18 is very low (and zero below 12). It is not
 clear whether this comparison would be improved by excluding all Lithuanians under 20.
