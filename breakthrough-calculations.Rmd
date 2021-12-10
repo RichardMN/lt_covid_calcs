@@ -9,7 +9,7 @@ twitter:
   site: "@rmartinnielsen"
 creative_commons: CC BY
 params:
-  download_data: FALSE
+  download_data: TRUE
   prepared_by:
     label: "Prepared by:"
     value: "Richard Martin-Nielsen"
