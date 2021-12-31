@@ -9,7 +9,7 @@ twitter:
   site: "@rmartinnielsen"
 creative_commons: CC BY
 params:
-  download_data: TRUE
+  download_data: FALSE
   prepared_by:
     label: "Prepared by:"
     value: "Richard Martin-Nielsen"
@@ -663,6 +663,9 @@ infection_ages %>%
   mutate( r2i2_mdsv = r2i2_mdsv / 7 ) %>%
   ggplot(aes(colour=date,y=ve_vs_r0_r2,x=r2i2_mdsv, group=delta)) +
   geom_point() +
+  annotate("text", x=3,y=0.6,label="Alpha-dominant") +
+  annotate("text", x=20,y=0.8,label="Delta-dominant") +
+  #annotate("text", x=4.5,y=0.25,label="Lithuanian data") +
   scale_y_continuous(labels = scales::percent_format()) +
   scale_color_date(name="Date") +
   geom_smooth() +
