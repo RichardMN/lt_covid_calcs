@@ -37,6 +37,7 @@ library(RColorBrewer)
 library(httr)
 library(jsonlite)
 library(readxl)
+library(ggrepel)
 
 # Set-up output ----
 # Figure path on disk = base.dir + fig.path
@@ -287,43 +288,88 @@ number of larger cohorts is used. It is also possible to extend the graph
 further back into 2021.
 
 ```{r cohort_prevalance_cases_cumulative, echo=FALSE, preview=TRUE}
-per_capita_rates %>%
+
+pc_rate_14d <- 
+  per_capita_rates %>%
   group_by(cohort) %>%
-  mutate(pc_cases_14d = zoo::rollsum(cases_per_100k,k=14, fill=0, align="right") ) %>%
+  mutate(pc_cases_14d = zoo::rollsum(cases_per_100k,k=14, fill=NA, align="right") ) %>%
   ungroup() %>%
-  filter(date > ymd("2020-11-01")) %>%
+  filter(date >= ymd("2021-09-01"))
+
+ntl_rate_14d <- per_capita_rates %>%
+  group_by(date) %>%
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE))) %>%
+  mutate(cases_per_100k = new_cases / population * 100000,
+         deaths_all_per_mill = deaths_all / population * 1000000) %>%
+  mutate(pc_cases_14d = zoo::rollsum(cases_per_100k,k=14, fill=NA, align="right") ) %>%
+  filter(date >= ymd("2021-09-01"))
+pc_rate_14d %>%
   ggplot(aes(x = date, y=pc_cases_14d, colour=cohort)) +
   theme_minimal() +
+  theme( legend.position = "none") +
   geom_line(size=1) +
+  geom_line(data = ntl_rate_14d, aes(x=date, y=pc_cases_14d),
+            linetype = 2, colour="black") +
+  geom_text_repel(aes(x=date,y=pc_cases_14d,label=cohort,colour=cohort),
+                  nudge_x=10,
+                  direction="y",hjust="left",
+                  data=tail(pc_rate_14d, 9)) +
+  geom_text_repel(aes(x=date,y=pc_cases_14d,label="National"),
+                  colour="black",
+                  nudge_y=1000,
+                  hjust="right",
+                  data=ntl_rate_14d %>% filter(date == "2022-01-01")) +
   #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Age cohort", option = "inferno") +
-  scale_y_continuous(sec.axis = sec_axis(~ .)) +
+  scale_colour_viridis_d(name = "Age cohort") +
+  scale_y_continuous() +
   labs(title="Lithuania - COVID-19 cases by age group",
        subtitle="14 day cumulative per 100,000",
        y="New cases",
        x="Date",
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date()
+  scale_x_date(expand = expansion(add=c(0,25)))
 ```
 
 ```{r cohort_prevalance_cases_mean, echo=FALSE}
-per_capita_rates %>%
+pc_rate_7d <- per_capita_rates %>%
   group_by(cohort) %>%
-  mutate(pc_cases_7d_mean = zoo::rollmean(cases_per_100k,k=7, fill=0, align="right") ) %>%
+  mutate(pc_cases_7d_mean = zoo::rollmean(cases_per_100k,k=7, fill=NA, align="right") ) %>%
   ungroup() %>%
-  filter(date > ymd("2020-11-01")) %>%
+  filter(date >= ymd("2021-09-01"))
+
+ntl_rate_7d <- per_capita_rates %>%
+  group_by(date) %>%
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE))) %>%
+  mutate(cases_per_100k = new_cases / population * 100000,
+         deaths_all_per_mill = deaths_all / population * 1000000) %>%
+  mutate(pc_cases_7d_mean = zoo::rollmean(cases_per_100k,k=7, fill=NA, align="right") ) %>%
+    filter(date >= ymd("2021-09-01"))
+pc_rate_7d %>%
   ggplot(aes(x = date, y=pc_cases_7d_mean, colour=cohort)) +
   theme_minimal() +
+  theme( legend.position = "none") +
   geom_line(size=1) +
+  geom_line(data = ntl_rate_7d, aes(x=date, y=pc_cases_7d_mean),
+            linetype = 2,
+            colour="black") +
+  geom_text_repel(aes(x=date,y=pc_cases_7d_mean,label=cohort,colour=cohort),
+                  nudge_x=20,
+                  direction="y",hjust="left",
+                  data=tail(pc_rate_7d, 9)) +
+  geom_text_repel(aes(x=date,y=pc_cases_7d_mean,label="National"),
+                  colour="black",
+                  nudge_y=60,
+                  hjust="left",
+                  data=ntl_rate_7d %>% filter(date == "2021-11-15")) +
   #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Age cohort", option = "inferno") +
-  scale_y_continuous(sec.axis = sec_axis(~ .)) +
+  scale_colour_viridis_d(name = "Age cohort") +
+  scale_y_continuous() +
   labs(title="Lithuania - COVID-19 cases by age group",
        subtitle="7 day rolling average per 100,000",
        y="New cases",
        x="Date",
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date()
+  scale_x_date(expand = expansion(add=c(0,15)))
 ```
 
 ```{r cohort_prevalance_deaths_mean, echo=FALSE}
