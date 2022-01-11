@@ -78,7 +78,12 @@ theme_set(
 
 # dataset source: ----
 
+# This is the source for the vaccination status transition table
 # https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/1fd352a1c4534afe8ff87c564c0724c0_0/about
+
+# This is the url for the aggregate case numbers (including re-infections)
+# https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/Agreguoti_COVID19_atvejai_ir_mirtys/FeatureServer/0/query?where=1%3D1&outFields=date,new_cases&outSR=4326&f=json
+
 
 # dataset description: ----
 
@@ -192,7 +197,24 @@ if (params$download_data) {
     sheet = "initial_states_20210101",
     archive = "initial_states",
     transpose = FALSE)
-  save(lt_vacc_eff_data, initial_state,
+  
+  # Download the top-level case data
+  
+  # https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/Agreguoti_COVID19_atvejai_ir_mirtys/FeatureServer/0/query?where=1%3D1&outFields=date,new_cases,age_gr&outSR=4326&f=json
+  
+    lt_case_data <- download_restful(
+    api_call = "https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/Agreguoti_COVID19_atvejai_ir_mirtys/FeatureServer/0/query?where=1%3D1&outFields=date,new_cases,age_gr,sex&outSR=4326&f=json" # nolint
+  ) %>%
+    rename_with(~ gsub("attributes.","", .x)) %>%
+      mutate(date=as_date(date)) %>%
+      group_by(date, age_gr, sex) %>%
+      summarise(new_cases=sum(new_cases), .groups = "drop") %>%
+      mutate(sex = case_when(
+        sex == "Moteris" ~ "M",
+        sex == "Vyras" ~ "V"
+      ))
+  
+  save(lt_vacc_eff_data, lt_case_data, initial_state,
        file = "input_data_ongoing.Rds")
 } else {
   load("input_data_ongoing.Rds")
@@ -205,16 +227,19 @@ lt_natl_ve_data <- tibble(lt_vacc_eff_data) %>%
   #select(-object_id) %>%
   group_by(date, sex, age_gr) %>%
   summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
-  ungroup()
+  ungroup() %>%
+  left_join(lt_case_data, by=c("date","sex","age_gr"))
 
-lt_natl_ve_data_adults <- tibble(lt_vacc_eff_data) %>%
-  left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
-  #select(-object_id) %>%
-  filter(age_gr != "0-19") %>%
-  group_by(date, sex, age_gr) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
-  ungroup()
-
+# lt_natl_ve_data_adults <- tibble(lt_vacc_eff_data) %>%
+#   left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
+#   #select(-object_id) %>%
+#   filter(age_gr != "0-19") %>%
+#   group_by(date, sex, age_gr) %>%
+#   summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
+#   ungroup() %>%
+#   left_join(lt_case_data, by=c("date","sex","age_gr"))
+lt_natl_ve_data_adults <-  lt_natl_ve_data %>% filter(age_gr != "0-19")
+ 
 r0_init_cohorts <- tibble(initial_state) %>%
   group_by(sex, age_gr) %>%
   summarise(r0 = sum(at_risk))
@@ -284,10 +309,20 @@ inf_comp_cohort_wide <- calculate_ve(
 
 infection_comparisons_wide <- lt_natl_ve_data %>% #filter(date < "2021-01-15") %>%
   group_by(date) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
-  mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         boosted = (r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
+  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
+            r0_init=sum(r0_init)) %>%
+  # mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+  #        fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+  #        boosted = (r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+  #        other = new_cases - (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)
+  #        ) %>%
+  mutate(
+    unvaxxed = (r0i0+r0i1) / new_cases,
+    partially = (r1i1+r1i2) / new_cases,
+    fully = (r2i2+r2i3) / new_cases,
+    boosted = (r3i3) / new_cases,
+    other = (new_cases - (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) / new_cases
+  ) %>%
   ungroup() %>%
   # calculate populations in each category
   mutate(
