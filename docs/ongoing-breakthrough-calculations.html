@@ -2359,7 +2359,8 @@ Show code
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>date</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarise</a></span><span class='op'>(</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/across.html'>across</a></span><span class='op'>(</span><span class='fu'><a href='https://tidyselect.r-lib.org/reference/starts_with.html'>matches</a></span><span class='op'>(</span><span class='st'>'[icr]\\d[icr]\\d$'</span><span class='op'>)</span>, <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>.x</span>, na.rm<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span>, r0_init<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>r0_init</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>partially <span class='op'>=</span> <span class='op'>(</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>)</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>r0i0</span><span class='op'>+</span><span class='va'>r0i1</span><span class='op'>+</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>+</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span>,
-         fully <span class='op'>=</span> <span class='op'>(</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>r0i0</span><span class='op'>+</span><span class='va'>r0i1</span><span class='op'>+</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>+</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+         fully <span class='op'>=</span> <span class='op'>(</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>)</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>r0i0</span><span class='op'>+</span><span class='va'>r0i1</span><span class='op'>+</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>+</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span>,
+         boosted <span class='op'>=</span> <span class='op'>(</span><span class='va'>r3i3</span><span class='op'>)</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>r0i0</span><span class='op'>+</span><span class='va'>r0i1</span><span class='op'>+</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>+</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='co'># calculate populations in each category</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>
@@ -2387,7 +2388,8 @@ Show code
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>date</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarise</a></span><span class='op'>(</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/across.html'>across</a></span><span class='op'>(</span><span class='fu'><a href='https://tidyselect.r-lib.org/reference/starts_with.html'>matches</a></span><span class='op'>(</span><span class='st'>'[icr]\\d[icr]\\d$'</span><span class='op'>)</span>, <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>.x</span>, na.rm<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>partially <span class='op'>=</span> <span class='op'>(</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>)</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>r0i0</span><span class='op'>+</span><span class='va'>r0i1</span><span class='op'>+</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>+</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span>,
-         fully <span class='op'>=</span> <span class='op'>(</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>r0i0</span><span class='op'>+</span><span class='va'>r0i1</span><span class='op'>+</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>+</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+         fully <span class='op'>=</span> <span class='op'>(</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>)</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>r0i0</span><span class='op'>+</span><span class='va'>r0i1</span><span class='op'>+</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>+</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span>,
+         boosted <span class='op'>=</span> <span class='op'>(</span><span class='va'>r3i3</span><span class='op'>)</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>r0i0</span><span class='op'>+</span><span class='va'>r0i1</span><span class='op'>+</span><span class='va'>r1i1</span><span class='op'>+</span><span class='va'>r1i2</span><span class='op'>+</span><span class='va'>r2i2</span><span class='op'>+</span><span class='va'>r2i3</span><span class='op'>+</span><span class='va'>r3i3</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='co'># calculate populations in each category</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>
@@ -2462,12 +2464,13 @@ Show code
 <span class='va'>infection_ages</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>infection_comparisons_wide</span>, <span class='va'>mean_age_values</span>,
                             by<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"date"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>median_age_calcs</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>med_vxd_age</span><span class='op'>)</span>, by<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"date"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>delta <span class='op'>=</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>date</span> <span class='op'>&lt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-05-20"</span><span class='op'>)</span>,
-                  <span class='cn'>FALSE</span>,
-                  <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span> <span class='va'>date</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-07-15"</span><span class='op'>)</span>,
-                          <span class='cn'>TRUE</span>,
-                          <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>dominant_variant <span class='op'>=</span> 
+           <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span>
+             <span class='va'>date</span> <span class='op'>&lt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-05-20"</span><span class='op'>)</span>                           <span class='op'>~</span>  <span class='st'>"alpha"</span>,
+             <span class='va'>date</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-07-15"</span><span class='op'>)</span> <span class='op'>&amp;</span> <span class='va'>date</span> <span class='op'>&lt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2021-12-15"</span><span class='op'>)</span> <span class='op'>~</span> <span class='st'>"delta"</span>,
+             <span class='va'>date</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://lubridate.tidyverse.org/reference/ymd.html'>ymd</a></span><span class='op'>(</span><span class='st'>"2022-01-15"</span><span class='op'>)</span>                            <span class='op'>~</span> <span class='st'>"omicron"</span>
+                          <span class='op'>)</span>
+  <span class='op'>)</span>
 
 <span class='va'>infection_comparisons</span> <span class='op'>&lt;-</span> <span class='va'>infection_comparisons_wide</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://rdrr.io/pkg/tidyr/man/pivot_longer.html'>pivot_longer</a></span><span class='op'>(</span>
@@ -2522,9 +2525,10 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/cases_graph_contributions-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/cases_graph_contributions-1.png" width="624" /></p>
 </div>
 <p>Looking at the contribution to the number of cases, these cases in fully-vaccinated individuals have increased fairly steadily since July. The number of cases in partially-vaccinated individuals staying fairly constant reflects that this population is staying fairly stable with steady turnover as people complete their two dose vaccination regime.</p>
+<p>The number of cases recorded in this dataset does not reflect re-infections.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -2535,20 +2539,20 @@ Show code
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>event</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>pc_cases_7d_mean <span class='op'>=</span> <span class='fu'>zoo</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/zoo/man/rollmean.html'>rollmean</a></span><span class='op'>(</span><span class='va'>count</span>,k<span class='op'>=</span><span class='fl'>7</span>, fill<span class='op'>=</span><span class='cn'>NA</span>, align<span class='op'>=</span><span class='st'>"center"</span><span class='op'>)</span> <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>event</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"partially"</span>, <span class='st'>"fully"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>event</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"partially"</span>, <span class='st'>"fully"</span>, <span class='st'>"boosted"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='co'>#filter(date &gt; ymd("2020-11-01")) %&gt;%</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>date</span>, y<span class='op'>=</span><span class='va'>pc_cases_7d_mean</span>, colour<span class='op'>=</span><span class='va'>event</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_minimal</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>size<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='co'>#scale_fill_brewer(palette = "Set2") +</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_colour_viridis_d</a></span><span class='op'>(</span>name <span class='op'>=</span> <span class='st'>"Vaccination status"</span>,
-                         breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"partially"</span>, <span class='st'>"fully"</span><span class='op'>)</span>,
-                         labels <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Partially"</span>, <span class='st'>"Fully"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+                         breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"partially"</span>, <span class='st'>"fully"</span>, <span class='st'>"boosted"</span><span class='op'>)</span>,
+                         labels <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Partially"</span>, <span class='st'>"Fully"</span>, <span class='st'>"Boosted"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>legend.position <span class='op'>=</span> <span class='st'>"bottom"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span> labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/label_percent.html'>percent</a></span>,
                       sec.axis <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/sec_axis.html'>sec_axis</a></span><span class='op'>(</span><span class='op'>~</span> <span class='va'>.</span>, labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/label_percent.html'>percent</a></span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title<span class='op'>=</span><span class='st'>"Lithuania - COVID-19 cases by vaccination status"</span>,
-       subtitle<span class='op'>=</span><span class='st'>"7 day rolling average as fraction of total infections"</span>,
+       subtitle<span class='op'>=</span><span class='st'>"7 day rolling average as fraction of total first infections"</span>,
        y<span class='op'>=</span><span class='st'>"New cases"</span>,
        x<span class='op'>=</span><span class='st'>"Date"</span>,
        caption<span class='op'>=</span><span class='st'>"Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt"</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2556,7 +2560,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/cases_graph_fractions-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/cases_graph_fractions-1.png" width="624" /></p>
 </div>
 <p>Normalised by the number of people with each vaccination status, incidence peaked for unvaccinated individuals at over 1.5 in late October. The figures for fully- and partially-vaccinated individuals increased slowly since July and peaked a little later. There are some cases among individuals who have had a third booster shot.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -2592,7 +2596,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/cases_by_status_proportional-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/cases_by_status_proportional-1.png" width="624" /></p>
 </div>
 <p>Vaccine effectiveness is calculated by considering the relative incidence among each population compared with the unvaccinated population. This has shown fairly steady decline in fully-vaccinated individuals since July and is now below 35%.</p>
 <p>This fading vaccination across the whole population of fully-vaccinated individuals reflects that these vaccinations are aging. Lithuania started vaccinating individuals in early winter 2021. The median “age” of second dose vaccination is over 150 days (on 20 November).</p>
@@ -2657,7 +2661,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/vaccine_effectiveness_7d-1.png" width="624" data-distill-preview=1 /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/vaccine_effectiveness_7d-1.png" width="624" data-distill-preview=1 /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2701,7 +2705,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/vaccine_effectiveness_14d-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/vaccine_effectiveness_14d-1.png" width="624" /></p>
 </div>
 <h2 id="comparing-vaccine-effectiveness-to-vaccine-age">Comparing vaccine effectiveness to vaccine age</h2>
 <p>OSP provides for each data, the average ages of vaccinations among those who are infected after two doses (<code>r1i1_mdsv</code> and <code>r2i2_mdsv</code>), and I also have a rough calculation of the median age of a double vaccination. (This calculation does not account for removing people who are infected or “censored” from the population, nor for those who have booster shots, so becomes less useful after November when boosters become more common.)</p>
@@ -2714,9 +2718,9 @@ Show code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>infection_ages</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>r2i2_mdsv</span><span class='op'>&gt;</span><span class='fl'>0</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>delta</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>r2i2_mdsv</span><span class='op'>&gt;</span><span class='fl'>0</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>med_vxd_age <span class='op'>=</span> <span class='va'>med_vxd_age</span> <span class='op'>/</span> <span class='fl'>7</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>colour<span class='op'>=</span><span class='va'>date</span>,y<span class='op'>=</span><span class='va'>ve_vs_r0_r2</span>,x<span class='op'>=</span><span class='va'>med_vxd_age</span>,group<span class='op'>=</span><span class='va'>delta</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>colour<span class='op'>=</span><span class='va'>date</span>,y<span class='op'>=</span><span class='va'>ve_vs_r0_r2</span>,x<span class='op'>=</span><span class='va'>med_vxd_age</span>,group<span class='op'>=</span><span class='va'>dominant_variant</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span>labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/label_percent.html'>percent_format</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_color_date</a></span><span class='op'>(</span>name<span class='op'>=</span><span class='st'>"Date"</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2730,7 +2734,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/ve_by_med_age_r2-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/ve_by_med_age_r2-1.png" width="624" /></p>
 </div>
 <p>Breaking the data according to a split of Alpha-dominant time period and Delta-dominant periods we see separate trends for the two periods.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -2740,9 +2744,9 @@ Show code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>infection_ages</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>r2i2_mdsv</span><span class='op'>&gt;</span><span class='fl'>0</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>delta</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>r2i2_mdsv</span><span class='op'>&gt;</span><span class='fl'>0</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span> r2i2_mdsv <span class='op'>=</span> <span class='va'>r2i2_mdsv</span> <span class='op'>/</span> <span class='fl'>7</span> <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>colour<span class='op'>=</span><span class='va'>date</span>,y<span class='op'>=</span><span class='va'>ve_vs_r0_r2</span>,x<span class='op'>=</span><span class='va'>r2i2_mdsv</span>, group<span class='op'>=</span><span class='va'>delta</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>colour<span class='op'>=</span><span class='va'>date</span>,y<span class='op'>=</span><span class='va'>ve_vs_r0_r2</span>,x<span class='op'>=</span><span class='va'>r2i2_mdsv</span>, group<span class='op'>=</span><span class='va'>dominant_variant</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/annotate.html'>annotate</a></span><span class='op'>(</span><span class='st'>"text"</span>, x<span class='op'>=</span><span class='fl'>3</span>,y<span class='op'>=</span><span class='fl'>0.6</span>,label<span class='op'>=</span><span class='st'>"Alpha-dominant"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/annotate.html'>annotate</a></span><span class='op'>(</span><span class='st'>"text"</span>, x<span class='op'>=</span><span class='fl'>20</span>,y<span class='op'>=</span><span class='fl'>0.8</span>,label<span class='op'>=</span><span class='st'>"Delta-dominant"</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2759,7 +2763,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/ve_by_mdsv_r2-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/ve_by_mdsv_r2-1.png" width="624" /></p>
 </div>
 <h3 id="calculations-for-vaccine-effectiveness-after-a-single-dose">Calculations for vaccine effectiveness after a single dose</h3>
 <p>These are problematic, with some figures showing negative vaccine effectiveness. I think this is a small numbers problem where the number of cases recorded each day is quite low and so the uncertainty of when cases “should” be recorded may result in very noisy data. I plan to aggregate these figures by date of report to see if some of these problems may be resolved.</p>
@@ -2787,7 +2791,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/ve_by_janssen_r1-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/ve_by_janssen_r1-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2813,7 +2817,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/ve_by_mdsv_r1-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/ve_by_mdsv_r1-1.png" width="624" /></p>
 </div>
 <h2 id="comparison-with-vaccine-specific-uk-results">Comparison with vaccine-specific UK results</h2>
 <p>A UK preprint<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> analyses vaccine effectiveness in the UK for three vaccines against symptomatic disease, hospitalisation and death.</p>
@@ -2860,28 +2864,28 @@ Show code
          <span class='op'>)</span>
 
 <span class='va'>binned_ve_calcs_r2</span> <span class='op'>&lt;-</span> <span class='va'>infn_age_bins</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>delta</span><span class='op'>)</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>delta</span>,<span class='va'>mdsv_age_bin</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>dominant_variant</span>,<span class='va'>mdsv_age_bin</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarise</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>ve_vs_r0_r2</span><span class='op'>*</span><span class='fl'>100</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>ve_vs_r0_r2</span><span class='op'>*</span><span class='fl'>100</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>r_pop_r0</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>`Dominant strain` <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>delta</span>, <span class='st'>"Delta"</span>, <span class='st'>"Alpha"</span><span class='op'>)</span>, .before<span class='op'>=</span><span class='va'>delta</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>`Dominant strain` <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/case.html'>str_to_title</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span>, .before<span class='op'>=</span><span class='va'>dominant_variant</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>`Mean weeks since vaccination`<span class='op'>=</span><span class='va'>mdsv_age_bin</span>,
          `Vaccine effectiveness [%]`<span class='op'>=</span><span class='va'>`mean(ve_vs_r0_r2 * 100)`</span>,
          `Standard deviation [%]`<span class='op'>=</span><span class='va'>`sd(ve_vs_r0_r2 * 100)`</span>,
          `Susceptible population standard deviation`<span class='op'>=</span><span class='va'>`sd(r_pop_r0)`</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>`delta`</span><span class='op'>)</span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>`dominant_variant`</span><span class='op'>)</span>
 
 <span class='va'>quibble</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>q</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.05</span>, <span class='fl'>0.5</span>, <span class='fl'>0.95</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/quantile.html'>quantile</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>q</span><span class='op'>)</span>, q <span class='op'>=</span> <span class='va'>q</span><span class='op'>)</span>
 <span class='op'>}</span>
 <span class='va'>percentile_ve_calcs_r2</span> <span class='op'>&lt;-</span> <span class='va'>infn_age_bins</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>delta</span><span class='op'>)</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>delta</span>,<span class='va'>mdsv_age_bin</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>dominant_variant</span>,<span class='va'>mdsv_age_bin</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarise</a></span><span class='op'>(</span><span class='fu'>quibble</span><span class='op'>(</span><span class='va'>ve_vs_r0_r2</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://rdrr.io/pkg/tidyr/man/pivot_wider.html'>pivot_wider</a></span><span class='op'>(</span>id_cols<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>delta</span>, <span class='va'>mdsv_age_bin</span><span class='op'>)</span>, values_from <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>, names_from <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>q</span><span class='op'>)</span>, names_prefix <span class='op'>=</span> <span class='st'>"ci_"</span><span class='op'>)</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/tidyr/man/pivot_wider.html'>pivot_wider</a></span><span class='op'>(</span>id_cols<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>dominant_variant</span>, <span class='va'>mdsv_age_bin</span><span class='op'>)</span>, values_from <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>, names_from <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>q</span><span class='op'>)</span>, names_prefix <span class='op'>=</span> <span class='st'>"ci_"</span><span class='op'>)</span>
 <span class='va'>pretty_percentiles</span> <span class='op'>&lt;-</span> <span class='va'>percentile_ve_calcs_r2</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>transmute</a></span><span class='op'>(</span>`Dominant strain` <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>delta</span>, <span class='st'>"Delta"</span>, <span class='st'>"Alpha"</span><span class='op'>)</span>,
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>transmute</a></span><span class='op'>(</span>`Dominant strain` <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/case.html'>str_to_title</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span>,
          `Mean weeks since vaccination`<span class='op'>=</span><span class='va'>mdsv_age_bin</span>,
          `Vaccine effectiveness [%]`<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/sprintf.html'>sprintf</a></span><span class='op'>(</span><span class='st'>"%.1f (%.1f to %.1f)"</span>, <span class='va'>`ci_0.5`</span><span class='op'>*</span><span class='fl'>100</span>, <span class='va'>`ci_0.05`</span><span class='op'>*</span><span class='fl'>100</span>, <span class='va'>`ci_0.95`</span><span class='op'>*</span><span class='fl'>100</span><span class='op'>)</span><span class='op'>)</span>
   
@@ -2945,7 +2949,7 @@ Show code
 <tr class="odd">
 <td style="text-align: left;">Delta</td>
 <td style="text-align: left;">20+ weeks</td>
-<td style="text-align: left;">58.2 (9.4 to 65.9)</td>
+<td style="text-align: left;">60.5 (53.2 to 66.4)</td>
 </tr>
 </tbody>
 </table>
@@ -2958,13 +2962,13 @@ Show code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>infn_age_bins</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>delta</span><span class='op'>)</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>delta <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>delta</span>, <span class='st'>"Delta"</span>, <span class='st'>"Alpha"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>dominant_variant <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/case.html'>str_to_title</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x<span class='op'>=</span><span class='va'>mdsv_age_bin</span>, y<span class='op'>=</span><span class='va'>ve_vs_r0_r2</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span>limits<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>,<span class='fl'>1</span><span class='op'>)</span>,labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/label_percent.html'>percent</a></span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_boxplot.html'>geom_boxplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_jitter.html'>geom_jitter</a></span><span class='op'>(</span>alpha<span class='op'>=</span><span class='fl'>0.5</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_grid.html'>facet_grid</a></span><span class='op'>(</span>cols<span class='op'>=</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/vars.html'>vars</a></span><span class='op'>(</span><span class='va'>delta</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_grid.html'>facet_grid</a></span><span class='op'>(</span>cols<span class='op'>=</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/vars.html'>vars</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
     <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.caption<span class='op'>=</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>rel</a></span><span class='op'>(</span><span class='fl'>0.8</span><span class='op'>)</span><span class='op'>)</span>,
           plot.title<span class='op'>=</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>rel</a></span><span class='op'>(</span><span class='fl'>1.2</span><span class='op'>)</span><span class='op'>)</span>,
           axis.text.x<span class='op'>=</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>rel</a></span><span class='op'>(</span><span class='fl'>0.8</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>)</span> <span class='op'>+</span>
@@ -2977,7 +2981,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/boxplot_lt_binned_data-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/boxplot_lt_binned_data-1.png" width="624" /></p>
 </div>
 <h3 id="comparison-with-uk-data">Comparison with UK data</h3>
 <p>The UK results for vaccine effectiveness giving protection against symptomatic disease are transcribed from Table 1 of the paper.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
@@ -3020,7 +3024,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/comparison_with_UK-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/comparison_with_UK-1.png" width="624" /></p>
 </div>
 <p>This gives results for four different overlapping age groups. The 16+ has the best overlap with available Lithuanian data.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -3054,7 +3058,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/uk_16_and_older-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/uk_16_and_older-1.png" width="624" /></p>
 </div>
 <p>Finally the comparison can be between Lithuanian data for all age groups with UK results for individuals 16+ using one of the two vaccines most commonly used in Lithuania.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -3076,10 +3080,10 @@ Show code
                   size<span class='op'>=</span><span class='fl'>0.5</span>,width<span class='op'>=</span><span class='fl'>0.5</span>, position<span class='op'>=</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/position_jitter.html'>position_jitter</a></span><span class='op'>(</span>width<span class='op'>=</span><span class='fl'>0.05</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
 
    <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_boxplot.html'>geom_boxplot</a></span><span class='op'>(</span>data<span class='op'>=</span><span class='va'>infn_age_bins</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-                  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>delta</span><span class='op'>==</span><span class='cn'>TRUE</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span>,
+                  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>==</span><span class='st'>"delta"</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span>,
                 mapping<span class='op'>=</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x<span class='op'>=</span><span class='va'>mdsv_age_bin</span>, y<span class='op'>=</span><span class='va'>ve_vs_r0_r2</span><span class='op'>)</span>,colour<span class='op'>=</span><span class='st'>"grey"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_jitter.html'>geom_jitter</a></span><span class='op'>(</span>data<span class='op'>=</span><span class='va'>infn_age_bins</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-                <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>delta</span><span class='op'>==</span><span class='cn'>TRUE</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span>,
+                <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>dominant_variant</span><span class='op'>==</span><span class='st'>"delta"</span>, <span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>mdsv_age_bin</span><span class='op'>)</span><span class='op'>)</span>,
               mapping<span class='op'>=</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x<span class='op'>=</span><span class='va'>mdsv_age_bin</span>, y<span class='op'>=</span><span class='va'>ve_vs_r0_r2</span><span class='op'>)</span>,
               alpha<span class='op'>=</span><span class='fl'>0.5</span>,colour<span class='op'>=</span><span class='st'>"grey"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/annotate.html'>annotate</a></span><span class='op'>(</span><span class='st'>"text"</span>, x<span class='op'>=</span><span class='fl'>1</span>,y<span class='op'>=</span><span class='fl'>0.55</span>,label<span class='op'>=</span><span class='st'>"Vaxzevria"</span><span class='op'>)</span> <span class='op'>+</span>
@@ -3099,7 +3103,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/comparison_graph_uk_lt-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/comparison_graph_uk_lt-1.png" width="624" /></p>
 </div>
 <h3 id="comments-on-the-comparison">Comments on the comparison</h3>
 <p>Lithuania did not (unlike the UK and Canada) extend the spacing between first and second doses of Vaxzevria or other vaccines so even if the data were available to differentiate vaccine effectiveness for the different vaccines in use, the resulting effectiveness in Lithuania probably differs because of this difference in how the same vaccines were administered.</p>
@@ -3122,20 +3126,20 @@ Show code
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>event</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>pc_cases_7d_mean <span class='op'>=</span> <span class='fu'>zoo</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/zoo/man/rollmean.html'>rollmean</a></span><span class='op'>(</span><span class='va'>count</span>,k<span class='op'>=</span><span class='fl'>7</span>, fill<span class='op'>=</span><span class='cn'>NA</span>, align<span class='op'>=</span><span class='st'>"center"</span><span class='op'>)</span> <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>event</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"partially"</span>, <span class='st'>"fully"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>event</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"partially"</span>, <span class='st'>"fully"</span>, <span class='st'>"boosted"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='co'>#filter(date &gt; ymd("2020-11-01")) %&gt;%</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>date</span>, y<span class='op'>=</span><span class='va'>pc_cases_7d_mean</span>, colour<span class='op'>=</span><span class='va'>event</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_minimal</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>size<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='co'>#scale_fill_brewer(palette = "Set2") +</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_colour_viridis_d</a></span><span class='op'>(</span>name <span class='op'>=</span> <span class='st'>"Vaccination status"</span>,
-                         breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"partially"</span>, <span class='st'>"fully"</span><span class='op'>)</span>,
-                         labels <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Partially"</span>, <span class='st'>"Fully"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+                         breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"partially"</span>, <span class='st'>"fully"</span>, <span class='st'>"boosted"</span><span class='op'>)</span>,
+                         labels <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Partially"</span>, <span class='st'>"Fully"</span>, <span class='st'>"Boosted"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>legend.position <span class='op'>=</span> <span class='st'>"bottom"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span> labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/label_percent.html'>percent</a></span>,
                       sec.axis <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/sec_axis.html'>sec_axis</a></span><span class='op'>(</span><span class='op'>~</span> <span class='va'>.</span>, labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/label_percent.html'>percent</a></span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title<span class='op'>=</span><span class='st'>"Lithuania - COVID-19 cases by vaccination status - 20+ only"</span>,
-       subtitle<span class='op'>=</span><span class='st'>"7 day rolling average as fraction of total infections"</span>,
+       subtitle<span class='op'>=</span><span class='st'>"7 day rolling average as fraction of total first infections"</span>,
        y<span class='op'>=</span><span class='st'>"New cases"</span>,
        x<span class='op'>=</span><span class='st'>"Date"</span>,
        caption<span class='op'>=</span><span class='st'>"Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt"</span><span class='op'>)</span> <span class='op'>+</span>
@@ -3143,7 +3147,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/cases_graph_fractions_adults-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/cases_graph_fractions_adults-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3178,7 +3182,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/cases_by_status_proportional_adults-1.png" width="624" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/cases_by_status_proportional_adults-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3227,7 +3231,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="breakthrough-calculations_files/figure-html5/vaccine_effectiveness_7d_adults-1.png" width="576" /></p>
+<p><img src="ongoing-breakthrough-calculations_files/figure-html5/vaccine_effectiveness_7d_adults-1.png" width="576" /></p>
 </div>
 <h2 class="appendix" id="dataset-description-english-translation">Dataset description (English translation)</h2>
 <p><em>google translation of original Lithuanian</em><a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>

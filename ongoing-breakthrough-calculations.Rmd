@@ -9,7 +9,7 @@ twitter:
   site: "@rmartinnielsen"
 creative_commons: CC BY
 params:
-  download_data: FALSE
+  download_data: TRUE
   prepared_by:
     label: "Prepared by:"
     value: "Richard Martin-Nielsen"
@@ -286,7 +286,8 @@ infection_comparisons_wide <- lt_natl_ve_data %>% #filter(date < "2021-01-15") %
   group_by(date) %>%
   summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
   mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
+         fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+         boosted = (r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
   ungroup() %>%
   # calculate populations in each category
   mutate(
@@ -314,7 +315,8 @@ infection_comparisons_wide_adults <- lt_natl_ve_data_adults %>%
   group_by(date) %>%
   summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE))) %>%
   mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
+         fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+         boosted = (r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
   ungroup() %>%
   # calculate populations in each category
   mutate(
@@ -389,12 +391,13 @@ mean_age_values <- tibble(lt_vacc_eff_data) %>%
 infection_ages <- left_join(infection_comparisons_wide, mean_age_values,
                             by=c("date")) %>%
   left_join(median_age_calcs %>%select(date, med_vxd_age), by=c("date")) %>%
-  mutate(delta =
-           ifelse(date < ymd("2021-05-20"),
-                  FALSE,
-                  ifelse( date > ymd("2021-07-15"),
-                          TRUE,
-                          NA)))
+  mutate(dominant_variant = 
+           case_when(
+             date < ymd("2021-05-20")                           ~  "alpha",
+             date > ymd("2021-07-15") & date < ymd("2021-12-15") ~ "delta",
+             date > ymd("2022-01-15")                            ~ "omicron"
+                          )
+  )
 
 infection_comparisons <- infection_comparisons_wide %>%
   pivot_longer(
@@ -454,25 +457,27 @@ The number of cases in partially-vaccinated individuals staying fairly
 constant reflects that this population is staying fairly stable with
 steady turnover as people complete their two dose vaccination regime.
 
+The number of cases recorded in this dataset does not reflect re-infections.
+
 ```{r cases_graph_fractions, message=FALSE, warning=FALSE}
 infection_comparisons %>%
   group_by(event) %>%
   mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
   ungroup() %>%
-  filter(event %in% c("partially", "fully")) %>%
+  filter(event %in% c("partially", "fully", "boosted")) %>%
   #filter(date > ymd("2020-11-01")) %>%
   ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
   theme_minimal() +
   geom_line(size=1) +
   #scale_fill_brewer(palette = "Set2") +
   scale_colour_viridis_d(name = "Vaccination status",
-                         breaks = c("partially", "fully"),
-                         labels = c("Partially", "Fully")) +
+                         breaks = c("partially", "fully", "boosted"),
+                         labels = c("Partially", "Fully", "Boosted")) +
   theme(legend.position = "bottom") +
   scale_y_continuous( labels = scales::percent,
                       sec.axis = sec_axis(~ ., labels = scales::percent)) +
   labs(title="Lithuania - COVID-19 cases by vaccination status",
-       subtitle="7 day rolling average as fraction of total infections",
+       subtitle="7 day rolling average as fraction of total first infections",
        y="New cases",
        x="Date",
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
@@ -638,9 +643,9 @@ date range will be excluded.
 
 ```{r ve_by_med_age_r2}
 infection_ages %>%
-  filter(r2i2_mdsv>0, !is.na(delta)) %>%
+  filter(r2i2_mdsv>0, !is.na(dominant_variant)) %>%
   mutate(med_vxd_age = med_vxd_age / 7) %>%
-  ggplot(aes(colour=date,y=ve_vs_r0_r2,x=med_vxd_age,group=delta)) +
+  ggplot(aes(colour=date,y=ve_vs_r0_r2,x=med_vxd_age,group=dominant_variant)) +
   geom_point() +
   scale_y_continuous(labels = scales::percent_format()) +
   scale_color_date(name="Date") +
@@ -659,9 +664,9 @@ two periods.
 
 ```{r ve_by_mdsv_r2}
 infection_ages %>%
-  filter(r2i2_mdsv>0, !is.na(delta)) %>%
+  filter(r2i2_mdsv>0, !is.na(dominant_variant)) %>%
   mutate( r2i2_mdsv = r2i2_mdsv / 7 ) %>%
-  ggplot(aes(colour=date,y=ve_vs_r0_r2,x=r2i2_mdsv, group=delta)) +
+  ggplot(aes(colour=date,y=ve_vs_r0_r2,x=r2i2_mdsv, group=dominant_variant)) +
   geom_point() +
   annotate("text", x=3,y=0.6,label="Alpha-dominant") +
   annotate("text", x=20,y=0.8,label="Delta-dominant") +
@@ -788,28 +793,28 @@ infn_age_bins <- infection_ages %>%
          )
 
 binned_ve_calcs_r2 <- infn_age_bins %>%
-  filter(!is.na(delta), !is.na(mdsv_age_bin)) %>%
-  group_by(delta,mdsv_age_bin) %>%
+  filter(!is.na(dominant_variant), !is.na(mdsv_age_bin)) %>%
+  group_by(dominant_variant,mdsv_age_bin) %>%
   summarise(mean(ve_vs_r0_r2*100), sd(ve_vs_r0_r2*100), sd(r_pop_r0)) %>%
-  mutate(`Dominant strain` = if_else(delta, "Delta", "Alpha"), .before=delta) %>%
+  mutate(`Dominant strain` = str_to_title(dominant_variant), .before=dominant_variant) %>%
   rename(`Mean weeks since vaccination`=mdsv_age_bin,
          `Vaccine effectiveness [%]`=`mean(ve_vs_r0_r2 * 100)`,
          `Standard deviation [%]`=`sd(ve_vs_r0_r2 * 100)`,
          `Susceptible population standard deviation`=`sd(r_pop_r0)`) %>%
   ungroup() %>%
-  select(-`delta`)
+  select(-`dominant_variant`)
 
 quibble <- function(x, q = c(0.05, 0.5, 0.95)) {
   tibble(x = quantile(x, q), q = q)
 }
 percentile_ve_calcs_r2 <- infn_age_bins %>%
-  filter(!is.na(delta), !is.na(mdsv_age_bin)) %>%
-  group_by(delta,mdsv_age_bin) %>%
+  filter(!is.na(dominant_variant), !is.na(mdsv_age_bin)) %>%
+  group_by(dominant_variant,mdsv_age_bin) %>%
   summarise(quibble(ve_vs_r0_r2)) %>%
-  pivot_wider(id_cols=c(delta, mdsv_age_bin), values_from = c(x), names_from = c(q), names_prefix = "ci_")
+  pivot_wider(id_cols=c(dominant_variant, mdsv_age_bin), values_from = c(x), names_from = c(q), names_prefix = "ci_")
 pretty_percentiles <- percentile_ve_calcs_r2 %>%
   ungroup() %>%
-  transmute(`Dominant strain` = if_else(delta, "Delta", "Alpha"),
+  transmute(`Dominant strain` = str_to_title(dominant_variant),
          `Mean weeks since vaccination`=mdsv_age_bin,
          `Vaccine effectiveness [%]`=sprintf("%.1f (%.1f to %.1f)", `ci_0.5`*100, `ci_0.05`*100, `ci_0.95`*100))
   
@@ -834,13 +839,13 @@ The different trends for the two periods with Alpha- and Delta-dominance are als
 
 ```{r boxplot_lt_binned_data}
 infn_age_bins %>%
-  filter(!is.na(delta), !is.na(mdsv_age_bin)) %>%
-  mutate(delta = if_else(delta, "Delta", "Alpha")) %>%
+  filter(!is.na(dominant_variant), !is.na(mdsv_age_bin)) %>%
+  mutate(dominant_variant = str_to_title(dominant_variant)) %>%
   ggplot(aes(x=mdsv_age_bin, y=ve_vs_r0_r2)) +
   scale_y_continuous(limits=c(0,1),labels = scales::percent) +
   geom_boxplot() +
   geom_jitter(alpha=0.5) +
-  facet_grid(cols=vars(delta)) +
+  facet_grid(cols=vars(dominant_variant)) +
     theme(plot.caption=element_text(size = rel(0.8)),
           plot.title=element_text(size = rel(1.2)),
           axis.text.x=element_text(size = rel(0.8)) ) +
@@ -939,10 +944,10 @@ uk_values %>%
                   size=0.5,width=0.5, position=position_jitter(width=0.05)) +
 
    geom_boxplot(data=infn_age_bins %>%
-                  filter(delta==TRUE, !is.na(mdsv_age_bin)),
+                  filter(dominant_variant=="delta", !is.na(mdsv_age_bin)),
                 mapping=aes(x=mdsv_age_bin, y=ve_vs_r0_r2),colour="grey") +
   geom_jitter(data=infn_age_bins %>%
-                filter(delta==TRUE, !is.na(mdsv_age_bin)),
+                filter(dominant_variant=="delta", !is.na(mdsv_age_bin)),
               mapping=aes(x=mdsv_age_bin, y=ve_vs_r0_r2),
               alpha=0.5,colour="grey") +
   annotate("text", x=1,y=0.55,label="Vaxzevria") +
@@ -1005,20 +1010,20 @@ infection_comparisons_adults %>%
   group_by(event) %>%
   mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
   ungroup() %>%
-  filter(event %in% c("partially", "fully")) %>%
+  filter(event %in% c("partially", "fully", "boosted")) %>%
   #filter(date > ymd("2020-11-01")) %>%
   ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
   theme_minimal() +
   geom_line(size=1) +
   #scale_fill_brewer(palette = "Set2") +
   scale_colour_viridis_d(name = "Vaccination status",
-                         breaks = c("partially", "fully"),
-                         labels = c("Partially", "Fully")) +
+                         breaks = c("partially", "fully", "boosted"),
+                         labels = c("Partially", "Fully", "Boosted")) +
   theme(legend.position = "bottom") +
   scale_y_continuous( labels = scales::percent,
                       sec.axis = sec_axis(~ ., labels = scales::percent)) +
   labs(title="Lithuania - COVID-19 cases by vaccination status - 20+ only",
-       subtitle="7 day rolling average as fraction of total infections",
+       subtitle="7 day rolling average as fraction of total first infections",
        y="New cases",
        x="Date",
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
