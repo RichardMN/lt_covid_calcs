@@ -212,8 +212,23 @@ if (params$download_data) {
       mutate(sex = case_when(
         sex == "Moteris" ~ "M",
         sex == "Vyras" ~ "V"
-      ))
-  
+      )) %>%
+      mutate(cohort = case_when(
+        age_gr == "0-9"   ~ "0-19",
+        age_gr == "10-19"   ~ "0-19",
+        age_gr == "80-89" ~ "80+",
+        age_gr == "90-99" ~ "80+",
+        age_gr == "Centenarianai" ~ "80+",
+        age_gr == "Nenustatyta" ~ NA_character_,
+        TRUE ~ age_gr
+      )) %>%
+#  filter(!is.na(cohort)) %>%
+      select(-age_gr) %>%
+      group_by(date, sex, cohort) %>%
+      summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)),
+                .groups = "drop") %>%
+      rename(age_gr = cohort)
+      
   save(lt_vacc_eff_data, lt_case_data, initial_state,
        file = "input_data_ongoing.Rds")
 } else {
@@ -226,9 +241,15 @@ lt_natl_ve_data <- tibble(lt_vacc_eff_data) %>%
   left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
   #select(-object_id) %>%
   group_by(date, sex, age_gr) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
-  ungroup() %>%
-  left_join(lt_case_data, by=c("date","sex","age_gr"))
+  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
+            r0_init = sum(at_risk),
+            .groups = "drop") %>%
+  mutate(tallied=r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3) %>%
+  full_join(lt_case_data %>%
+              filter(date >= ymd("2021-01-01")) %>%
+              mutate(sex = if_else(sex=="Cenzūruota", NA_character_, sex)),
+            by=c("date","sex","age_gr")) %>%
+  mutate(difference = tallied - new_cases)
 
 # lt_natl_ve_data_adults <- tibble(lt_vacc_eff_data) %>%
 #   left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
@@ -292,25 +313,19 @@ inf_comp_cohort_wide <- calculate_ve(
   lt_natl_ve_data %>%
     mutate(month = month(date)) %>%
     group_by(month, age_gr, sex) %>%
-        summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
+        summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
+                  r0_init=sum(r0_init),
+                  .groups = "drop") %>%
     mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
            fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
     ungroup()
 )
 
-# inf_comp_cohort_wide %>%
-#   filter(month>=3) %>%
-#   ggplot(aes(x=month, y=ve_vs_r0_r2, colour=age_gr, shape=sex)) + 
-#   geom_jitter() +
-#   geom_line() +
-#   scale_y_continuous(limits=c(0,1), labels = scales::percent)
-# 
-# inf_comp_cohort_wide %>% ggplot(aes(x=month, y=ve_vs_r0_r2, colour=sex)) + geom_jitter() + facet_grid(rows=vars(age_gr))
-
 infection_comparisons_wide <- lt_natl_ve_data %>% #filter(date < "2021-01-15") %>%
   group_by(date) %>%
   summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
-            r0_init=sum(r0_init)) %>%
+            r0_init=sum(r0_init),
+            new_cases = sum(new_cases, na.rm = TRUE), .groups = "drop") %>%
   # mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
   #        fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
   #        boosted = (r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
@@ -321,7 +336,7 @@ infection_comparisons_wide <- lt_natl_ve_data %>% #filter(date < "2021-01-15") %
     partially = (r1i1+r1i2) / new_cases,
     fully = (r2i2+r2i3) / new_cases,
     boosted = (r3i3) / new_cases,
-    other = (new_cases - (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) / new_cases
+    other = 1 - (unvaxxed+partially+fully+ boosted)
   ) %>%
   ungroup() %>%
   # calculate populations in each category
@@ -499,15 +514,15 @@ infection_comparisons %>%
   group_by(event) %>%
   mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
   ungroup() %>%
-  filter(event %in% c("partially", "fully", "boosted")) %>%
+  filter(event %in% c("unvaxxed", "partially", "fully", "boosted", "other")) %>%
   #filter(date > ymd("2020-11-01")) %>%
-  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
+  ggplot(aes(x = date, y=pc_cases_7d_mean, fill=event)) +
   theme_minimal() +
-  geom_line(size=1) +
+  geom_area(size=1) +
   #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Vaccination status",
-                         breaks = c("partially", "fully", "boosted"),
-                         labels = c("Partially", "Fully", "Boosted")) +
+  scale_fill_viridis_d(name = "Vaccination status",
+                         breaks = c("unvaxxed", "partially", "fully", "boosted", "other"),
+                         labels = c("Unvaccinated", "Partially", "Fully", "Boosted", "Other")) +
   theme(legend.position = "bottom") +
   scale_y_continuous( labels = scales::percent,
                       sec.axis = sec_axis(~ ., labels = scales::percent)) +
