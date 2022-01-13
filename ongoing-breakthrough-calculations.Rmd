@@ -23,6 +23,10 @@ municipality (Lithuania has 60), gender and age cohort. I aggregate these
 figures further to generate national data to look at how COVID-19 is now
 affecting vaccinated and unvaccinated individuals.
 
+The dataset only considers first infections - individuals who are infected
+more than once are not counted again. With more reinfections, these data
+now diverge from the national data considerably.
+
 All this comes with the caveats that I am working from OSP data but these
 are my calculations and there may be errors. I am not an epidemiologist.
 Straightforward presentation of case numbers have not seen much adjustment.
@@ -78,7 +82,12 @@ theme_set(
 
 # dataset source: ----
 
+# This is the source for the vaccination status transition table
 # https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/1fd352a1c4534afe8ff87c564c0724c0_0/about
+
+# This is the url for the aggregate case numbers (including re-infections)
+# https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/Agreguoti_COVID19_atvejai_ir_mirtys/FeatureServer/0/query?where=1%3D1&outFields=date,new_cases&outSR=4326&f=json
+
 
 # dataset description: ----
 
@@ -192,7 +201,39 @@ if (params$download_data) {
     sheet = "initial_states_20210101",
     archive = "initial_states",
     transpose = FALSE)
-  save(lt_vacc_eff_data, initial_state,
+  
+  # Download the top-level case data
+  
+  # https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/Agreguoti_COVID19_atvejai_ir_mirtys/FeatureServer/0/query?where=1%3D1&outFields=date,new_cases,age_gr&outSR=4326&f=json
+  
+    lt_case_data <- download_restful(
+    api_call = "https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/Agreguoti_COVID19_atvejai_ir_mirtys/FeatureServer/0/query?where=1%3D1&outFields=date,new_cases,age_gr,sex&outSR=4326&f=json" # nolint
+  ) %>%
+    rename_with(~ gsub("attributes.","", .x)) %>%
+      mutate(date=as_date(date)) %>%
+      group_by(date, age_gr, sex) %>%
+      summarise(new_cases=sum(new_cases), .groups = "drop") %>%
+      mutate(sex = case_when(
+        sex == "Moteris" ~ "M",
+        sex == "Vyras" ~ "V"
+      )) %>%
+      mutate(cohort = case_when(
+        age_gr == "0-9"   ~ "0-19",
+        age_gr == "10-19"   ~ "0-19",
+        age_gr == "80-89" ~ "80+",
+        age_gr == "90-99" ~ "80+",
+        age_gr == "Centenarianai" ~ "80+",
+        age_gr == "Nenustatyta" ~ NA_character_,
+        TRUE ~ age_gr
+      )) %>%
+#  filter(!is.na(cohort)) %>%
+      select(-age_gr) %>%
+      group_by(date, sex, cohort) %>%
+      summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)),
+                .groups = "drop") %>%
+      rename(age_gr = cohort)
+      
+  save(lt_vacc_eff_data, lt_case_data, initial_state,
        file = "input_data_ongoing.Rds")
 } else {
   load("input_data_ongoing.Rds")
@@ -204,23 +245,32 @@ lt_natl_ve_data <- tibble(lt_vacc_eff_data) %>%
   left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
   #select(-object_id) %>%
   group_by(date, sex, age_gr) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
-  ungroup()
+  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
+            r0_init = sum(at_risk),
+            .groups = "drop") 
+  # mutate(tallied=r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3) %>%
+  # full_join(lt_case_data %>%
+  #             filter(date >= ymd("2021-01-01")) %>%
+  #             mutate(sex = if_else(sex=="Cenzūruota", NA_character_, sex)),
+  #           by=c("date","sex","age_gr")) %>%
+  # mutate(difference = tallied - new_cases)
 
-lt_natl_ve_data_adults <- tibble(lt_vacc_eff_data) %>%
-  left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
-  #select(-object_id) %>%
-  filter(age_gr != "0-19") %>%
-  group_by(date, sex, age_gr) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
-  ungroup()
-
+# lt_natl_ve_data_adults <- tibble(lt_vacc_eff_data) %>%
+#   left_join(initial_state, by=c("municipality","sex","age_gr")) %>%
+#   #select(-object_id) %>%
+#   filter(age_gr != "0-19") %>%
+#   group_by(date, sex, age_gr) %>%
+#   summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init = sum(at_risk)) %>%
+#   ungroup() %>%
+#   left_join(lt_case_data, by=c("date","sex","age_gr"))
+lt_natl_ve_data_adults <-  lt_natl_ve_data %>% filter(age_gr != "0-19")
+ 
 r0_init_cohorts <- tibble(initial_state) %>%
   group_by(sex, age_gr) %>%
   summarise(r0 = sum(at_risk))
 
-r0_init <- sum(initial_state$at_risk)
-r0_init_adults <- sum(initial_state %>%
+r0_init_national <- sum(initial_state$at_risk)
+r0_init_adults_national <- sum(initial_state %>%
                           filter(age_gr != "0-19") %>%
                         pull(at_risk))
 
@@ -232,18 +282,25 @@ calculate_ve <-
     }
     #message(str(.data))
   # calculate populations in each category
-  mutate(.data, 
+    mutate(.data,
+           unvaxxed  = (r0i0+r0i1) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+           partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+           fully     = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+           boosted   = (r3i3)      / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)
+    ) %>%
+      arrange(date) %>%
+  mutate(
     censored = r0c0+r0c1+r1c1+r1c2+r2c2+r2c3+r3c3, # per day
     infected = r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3, # per day
     r_pop_r0 = r0_init - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
     r_pop_r1 = cumsum(r0r1-r1r2-r1i1-r1c1-r1i2-r1c2),
     r_pop_r2 = cumsum(r1r2-r2r3-r2i2-r2c2-r2i3-r2c3),
-    r_pop_r3 = cumsum(r2r3-r3c3-r3i3),
-) %>%
+    r_pop_r3 = cumsum(r2r3-r3c3-r3i3)
+  ) %>%
   # fractions of each population infected
   mutate(
     i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
-    i_frac_r1 = (r1i1+r1i2) / r_pop_r1,
+    i_frac_r1 = if_else(r_pop_r1 > 0, (r1i1+r1i2) / r_pop_r1, NA_real_),
     i_frac_r2 = if_else(r_pop_r2 >0, (r2i2+r2i3) / r_pop_r2, NA_real_),
     i_frac_r3 = if_else(r_pop_r3 >0,(r3i3) / r_pop_r3, NA_real_)
   ) %>%
@@ -258,87 +315,66 @@ inf_comp_wide <- calculate_ve(
   lt_natl_ve_data %>%
     #filter(date < "2021-01-15") %>%
     group_by(date) %>%
-    summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
-    mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-           fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
-    ungroup() )
-  
+    summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
+              .groups = "drop") %>%
+    mutate(r0_init = r0_init_national))
+
+inf_comp_wide_adults <- calculate_ve(
+  lt_natl_ve_data %>%
+    filter(age_gr != "0-19") %>%
+    group_by(date) %>%
+    summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
+              .groups = "drop") %>%
+    mutate(r0_init = r0_init_national))
+
 inf_comp_cohort_wide <- calculate_ve(
   lt_natl_ve_data %>%
-    mutate(month = month(date)) %>%
-    group_by(month, age_gr, sex) %>%
-        summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
+    #mutate(month = month(date)) %>%
+    group_by(date, age_gr, sex) %>%
+    summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
+              .groups = "drop") %>%
     mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-           fully = (r2i2+r2i3+r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
-    ungroup()
+           fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+           boosted = r3i3 / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
+    left_join(r0_init_cohorts, by=c("sex", "age_gr")) %>%
+    rename(r0_init = r0)
 )
 
-# inf_comp_cohort_wide %>%
-#   filter(month>=3) %>%
-#   ggplot(aes(x=month, y=ve_vs_r0_r2, colour=age_gr, shape=sex)) + 
-#   geom_jitter() +
-#   geom_line() +
-#   scale_y_continuous(limits=c(0,1), labels = scales::percent)
-# 
-# inf_comp_cohort_wide %>% ggplot(aes(x=month, y=ve_vs_r0_r2, colour=sex)) + geom_jitter() + facet_grid(rows=vars(age_gr))
+# infection_comparisons_wide <- lt_natl_ve_data %>% #filter(date < "2021-01-15") %>%
+#   group_by(date) %>%
+#   summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)),
+#             r0_init=sum(r0_init),
+#             .groups = "drop") %>%
+  
 
-infection_comparisons_wide <- lt_natl_ve_data %>% #filter(date < "2021-01-15") %>%
-  group_by(date) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE)), r0_init=sum(r0_init)) %>%
-  mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         boosted = (r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
-  ungroup() %>%
-  # calculate populations in each category
-  mutate(
-    censored = r0c0+r0c1+r1c1+r1c2+r2c2+r2c3+r3c3, # per day
-    infected = r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3, # per day
-    #r_pop = r0_init - cumsum(censored + infected),
-    r_pop_r0 = r0_init - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
-    r_pop_r1 = cumsum(r0r1-r1r2-r1i1-r1c1-r1i2-r1c2),
-    r_pop_r2 = cumsum(r1r2-r2r3-r2i2-r2c2-r2i3-r2c3),
-    r_pop_r3 = cumsum(r2r3-r3c3-r3i3)) %>%
-  # fractions of each population infected
-  mutate(
-    i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
-    i_frac_r1 = (r1i1+r1i2) / r_pop_r1,
-    i_frac_r2 = if_else(r_pop_r2 >0, (r2i2+r2i3) / r_pop_r2, NA_real_),
-    i_frac_r3 = if_else(r_pop_r3 >0,(r3i3) / r_pop_r3, NA_real_)
-  ) %>%
-  mutate(
-    ve_vs_r0_r1 =  (i_frac_r0 - i_frac_r1)/i_frac_r0,
-    ve_vs_r0_r2 = (i_frac_r0 - i_frac_r2)/i_frac_r0,
-    ve_vs_r0_r3 = if_else(r_pop_r3 != 0,(i_frac_r0 - i_frac_r3)/i_frac_r0, NA_real_)
-  )
-
-infection_comparisons_wide_adults <- lt_natl_ve_data_adults %>%
-  group_by(date) %>%
-  summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE))) %>%
-  mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
-         boosted = (r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
-  ungroup() %>%
-  # calculate populations in each category
-  mutate(
-    censored = r0c0+r0c1+r1c1+r1c2+r2c2+r2c3+r3c3, # per day
-    infected = r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3, # per day
-    #r_pop = r0_init_adults - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
-    r_pop_r0 = r0_init_adults - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
-    r_pop_r1 = cumsum(r0r1-r1r2-r1i1-r1c1-r1i2-r1c2),
-    r_pop_r2 = cumsum(r1r2-r2r3-r2i2-r2c2-r2i3-r2c3),
-    r_pop_r3 = cumsum(r2r3-r3c3-r3i3)) %>%
-  # fractions of each population infected
-  mutate(
-    i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
-    i_frac_r1 = (r1i1+r1i2) / r_pop_r1,
-    i_frac_r2 = (r2i2+r2i3) / r_pop_r2,
-    i_frac_r3 = (r3i3) / r_pop_r3
-  ) %>%
-  mutate(
-    ve_vs_r0_r1 =  (i_frac_r0 - i_frac_r1)/i_frac_r0,
-    ve_vs_r0_r2 = (i_frac_r0 - i_frac_r2)/i_frac_r0,
-    ve_vs_r0_r3 = if_else(r_pop_r3 != 0,(i_frac_r0 - i_frac_r3)/i_frac_r0, NA_real_)
-  )
+# infection_comparisons_wide_adults <- lt_natl_ve_data_adults %>%
+#   group_by(date) %>%
+#   summarise(across(matches('[icr]\\d[icr]\\d$'), ~ sum(.x, na.rm=TRUE))) %>%
+#   mutate(partially = (r1i1+r1i2) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+#          fully = (r2i2+r2i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3),
+#          boosted = (r3i3) / (r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3)) %>%
+#   ungroup() %>%
+#   # calculate populations in each category
+#   mutate(
+#     censored = r0c0+r0c1+r1c1+r1c2+r2c2+r2c3+r3c3, # per day
+#     infected = r0i0+r0i1+r1i1+r1i2+r2i2+r2i3+r3i3, # per day
+#     #r_pop = r0_init_adults - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
+#     r_pop_r0 = r0_init_adults - cumsum(r0r1+r0c0+r0c1+r0i0+r0i1),
+#     r_pop_r1 = cumsum(r0r1-r1r2-r1i1-r1c1-r1i2-r1c2),
+#     r_pop_r2 = cumsum(r1r2-r2r3-r2i2-r2c2-r2i3-r2c3),
+#     r_pop_r3 = cumsum(r2r3-r3c3-r3i3)) %>%
+#   # fractions of each population infected
+#   mutate(
+#     i_frac_r0 = (r0i0+r0i1) / r_pop_r0,
+#     i_frac_r1 = (r1i1+r1i2) / r_pop_r1,
+#     i_frac_r2 = (r2i2+r2i3) / r_pop_r2,
+#     i_frac_r3 = (r3i3) / r_pop_r3
+#   ) %>%
+#   mutate(
+#     ve_vs_r0_r1 =  (i_frac_r0 - i_frac_r1)/i_frac_r0,
+#     ve_vs_r0_r2 = (i_frac_r0 - i_frac_r2)/i_frac_r0,
+#     ve_vs_r0_r3 = if_else(r_pop_r3 != 0,(i_frac_r0 - i_frac_r3)/i_frac_r0, NA_real_)
+#   )
 
 # Calculate median vaccination dates ----
 
@@ -367,12 +403,12 @@ median_date <- function(data, cols=c(date="date", sums="sums")) {
   return(as_date(medians))
 }
 
-narrowed_comps <- infection_comparisons_wide %>%
+narrowed_comps <- inf_comp_wide %>%
   mutate(fully_vxd_14d = r1r2) %>%
   select(date, fully_vxd_14d) %>%
   mutate(fully_vxd_14d_tot = cumsum(fully_vxd_14d))
 
-median_age_calcs <- infection_comparisons_wide %>%
+median_age_calcs <- inf_comp_wide %>%
   mutate(med_date = median_date(data = narrowed_comps,
                                 cols=c(date="date", sums="fully_vxd_14d_tot"))) %>%
   mutate(med_vxd_age
@@ -388,7 +424,7 @@ mean_age_values <- tibble(lt_vacc_eff_data) %>%
 
 # Join median and mean ages and apply a delta measure ----
 
-infection_ages <- left_join(infection_comparisons_wide, mean_age_values,
+infection_ages <- left_join(inf_comp_wide, mean_age_values,
                             by=c("date")) %>%
   left_join(median_age_calcs %>%select(date, med_vxd_age), by=c("date")) %>%
   mutate(dominant_variant = 
@@ -399,13 +435,13 @@ infection_ages <- left_join(infection_comparisons_wide, mean_age_values,
                           )
   )
 
-infection_comparisons <- infection_comparisons_wide %>%
+infection_comparisons <- inf_comp_wide %>%
   pivot_longer(
     cols = !c("date"),
     values_to = "count",
     names_to = "event")
 
-infection_comparisons_adults <- infection_comparisons_wide_adults %>%
+infection_comparisons_adults <- inf_comp_wide_adults %>%
   pivot_longer(
     cols = !c("date"),
     values_to = "count",
@@ -444,7 +480,7 @@ infection_comparisons %>%
   theme(legend.position = "bottom") +
   scale_y_continuous(sec.axis = sec_axis(~ .)) +
   labs(title="Lithuania - COVID-19 cases by vaccination status",
-       subtitle="7 day rolling average",
+       subtitle="7 day rolling average - first infections only",
        y="New cases",
        x="Date",
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
@@ -464,15 +500,15 @@ infection_comparisons %>%
   group_by(event) %>%
   mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
   ungroup() %>%
-  filter(event %in% c("partially", "fully", "boosted")) %>%
+  filter(event %in% c("unvaxxed", "partially", "fully", "boosted", "other")) %>%
   #filter(date > ymd("2020-11-01")) %>%
-  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
+  ggplot(aes(x = date, y=pc_cases_7d_mean, fill=event)) +
   theme_minimal() +
-  geom_line(size=1) +
+  geom_area(size=1) +
   #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Vaccination status",
-                         breaks = c("partially", "fully", "boosted"),
-                         labels = c("Partially", "Fully", "Boosted")) +
+  scale_fill_viridis_d(name = "Vaccination status",
+                         breaks = c("unvaxxed", "partially", "fully", "boosted", "other"),
+                         labels = c("Unvaccinated", "Partially", "Fully", "Boosted", "Other")) +
   theme(legend.position = "bottom") +
   scale_y_continuous( labels = scales::percent,
                       sec.axis = sec_axis(~ ., labels = scales::percent)) +
@@ -510,7 +546,7 @@ infection_comparisons %>%
   theme(legend.position = "bottom") +
   scale_y_continuous(sec.axis = sec_axis(~ .)) +
   labs(title="Lithuania - COVID-19 cases by vaccination status",
-       subtitle="7 day average cases per 1000 population with that status",
+       subtitle="7 day average new infections per 1000 population with that status",
        y="New cases",
        x="Date",
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
@@ -613,7 +649,7 @@ infection_comparisons %>%
     labels = scales::percent,
     oob = scales::oob_censor) +
   labs(title="Lithuania - COVID-19 vaccine effectiveness by vaccination status",
-       subtitle="14 day mean",
+       subtitle="14 day mean, only considering first infections",
        y="Vaccine effectiveness",
        x="Date",
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
@@ -1005,7 +1041,7 @@ children under the age of 11, and though figures for 18 and 19 year-olds are
 comparable with older adults, the data for vaccination and infection/censoring
 are only available on 20 year increments.
 
-```{r cases_graph_fractions_adults, message=FALSE, warning=FALSE}
+```{r cases_graph_contributions_adults, message=FALSE, warning=FALSE}
 infection_comparisons_adults %>%
   group_by(event) %>%
   mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
@@ -1050,53 +1086,78 @@ infection_comparisons_adults %>%
   theme(legend.position = "bottom") +
   scale_y_continuous(sec.axis = sec_axis(~ .)) +
   labs(title="Lithuania - COVID-19 cases by vaccination status, 20+ only",
-       subtitle="7 day average cases per 1000 population with that status",
+       subtitle="7 day average first infections per 1000 population with that status",
        y="New cases",
        x="Date",
        caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
   scale_x_date()
 ```
 
-```{r vaccine_effectiveness_7d_adults, fig.height=6, fig.width=6}
-
-inf_eff_plot_adults <- infection_comparisons_adults %>%
+```{r cases_graph_total_fractions_adults, message=FALSE, warning=FALSE}
+infection_comparisons_adults %>%
   group_by(event) %>%
   mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
   ungroup() %>%
-  filter(event %in% c("ve_vs_r0_r1", "ve_vs_r0_r2", "ve_vs_r0_r3")) %>%
-  filter(date > ymd("2021-03-01")) %>%
-  filter(pc_cases_7d_mean<1) %>%
-  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
+  filter(event %in% c("unvaxxed", "partially", "fully", "boosted", "other")) %>%
+  #filter(date > ymd("2020-11-01")) %>%
+  ggplot(aes(x = date, y=pc_cases_7d_mean, fill=event)) +
   theme_minimal() +
-  geom_line(size=1) +
+  geom_area(size=1) +
   #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Vaccination status (14 days after...)",
-                         breaks = c("ve_vs_r0_r1", "ve_vs_r0_r2", "ve_vs_r0_r3"),
-                         labels = c("First dose",
-                                    "Second dose",
-                                    "Booster")) +
+  scale_fill_viridis_d(name = "Vaccination status",
+                         breaks = c("unvaxxed", "partially", "fully", "boosted", "other"),
+                         labels = c("Unvaccinated", "Partially", "Fully", "Boosted", "Other")) +
   theme(legend.position = "bottom") +
-  scale_y_continuous(
-    sec.axis = sec_axis(
-      ~ .,
-      breaks = seq(from = 0, to = 1, by = 0.1),
-      labels = label_percent(accuracy=1)),
-    limits = c(0,1),
-    breaks = seq(from = 0, to = 1, by = 0.1),
-    #limits = c(0,15),
-    labels = label_percent(accuracy=1),
-    oob = scales::oob_censor) +
-  labs(
-       y="Effectiveness",
-       y="Date"
-) +
+  scale_y_continuous( labels = scales::percent,
+                      sec.axis = sec_axis(~ ., labels = scales::percent)) +
+  labs(title="Lithuania - COVID-19 cases by vaccination status",
+       subtitle="7 day rolling average as fraction of total first infections (ages 20+)",
+       y="New cases",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
   scale_x_date()
+```
 
-inf_eff_plot_adults / med_age_plot + plot_layout(heights = c(2,1)) +
-  plot_annotation(
-    title="Lithuania - COVID-19 vaccine effectiveness fades beyond 4 months",
-       subtitle="Calculated on 7 day averages, ages 20+, compared with median days since 2nd dose",
-    caption="Richard Martin-Nielsen\nData: Office of Statistics Portal osp.stat.gov.lt")
+```{r vaccine_effectiveness_7d_adults, fig.height=6, fig.width=6, include=FALSE}
+# 
+# inf_eff_plot_adults <- infection_comparisons_adults %>%
+#   group_by(event) %>%
+#   mutate(pc_cases_7d_mean = zoo::rollmean(count,k=7, fill=NA, align="center") ) %>%
+#   ungroup() %>%
+#   filter(event %in% c("ve_vs_r0_r1", "ve_vs_r0_r2", "ve_vs_r0_r3")) %>%
+#   filter(date > ymd("2021-03-01")) %>%
+#   filter(pc_cases_7d_mean<1) %>%
+#   ggplot(aes(x = date, y=pc_cases_7d_mean, colour=event)) +
+#   theme_minimal() +
+#   geom_line(size=1) +
+#   #scale_fill_brewer(palette = "Set2") +
+#   scale_colour_viridis_d(name = "Vaccination status (14 days after...)",
+#                          breaks = c("ve_vs_r0_r1", "ve_vs_r0_r2", "ve_vs_r0_r3"),
+#                          labels = c("First dose",
+#                                     "Second dose",
+#                                     "Booster")) +
+#   theme(legend.position = "bottom") +
+#   scale_y_continuous(
+#     sec.axis = sec_axis(
+#       ~ .,
+#       breaks = seq(from = 0, to = 1, by = 0.1),
+#       labels = label_percent(accuracy=1)),
+#     limits = c(0,1),
+#     breaks = seq(from = 0, to = 1, by = 0.1),
+#     #limits = c(0,15),
+#     labels = label_percent(accuracy=1),
+#     oob = scales::oob_censor) +
+#   labs(
+#        y="Effectiveness",
+#        y="Date"
+# ) +
+#   scale_x_date()
+# 
+# inf_eff_plot_adults / med_age_plot + plot_layout(heights = c(2,1)) +
+#   plot_annotation(
+#     title="Lithuania - COVID-19 vaccine effectiveness fades beyond 4 months",
+#        subtitle="Calculated on 7 day averages, ages 20+, compared with median days since 2nd dose",
+#     caption="Richard Martin-Nielsen\nData: Office of Statistics Portal osp.stat.gov.lt")
 
 ```
 
