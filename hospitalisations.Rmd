@@ -1,0 +1,434 @@
+---
+title: "Hospitalisations"
+params:
+  prepared_by:
+    label: "Prepared by:"
+    value: "Richard Martin-Nielsen"
+    input: text
+date: "`r Sys.Date()`"
+output: distill::distill_article
+base_url: https://richardmn.github.io/lt_covid_calcs
+twitter:
+  site: "@rmartinnielsen"
+creative_commons: CC BY
+---
+
+## Data source
+
+These charts are drawn using data published by the [Official Statistics
+Portal](https://osp.stat.gov.lt/pradinis) (OSP) on their [COVID-19 open
+data](https://experience.arcgis.com/experience/cab84dcfe0464c2a8050a78f817924ca/page/page_5/)
+site, along with the [annual population counts for Lithuanian
+municipalities](https://osp.stat.gov.lt/en_GB/gyventojai1), also
+published by the OSP.
+
+The R markdown source is available as a [github
+repo](https://github.com/RichardMN/lt_covid_calcs).
+
+```{r setup, include=FALSE}
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(lubridate)
+library(zoo)
+library(RColorBrewer)
+library(httr)
+library(jsonlite)
+library(readxl)
+library(ggrepel)
+
+# Set-up output ----
+# Figure path on disk = base.dir + fig.path
+# Figure URL online = base.url + fig.path
+#knitr::opts_knit$set(base.dir = stringr::str_c(here::here(), "/docs/"), base.url = "/lt_covid_calcs/") # project root folder
+knitr::opts_chunk$set(
+#	fig.path = stringr::str_c(paste0(paste("images", sep = "/")), "/"),
+	message = FALSE,
+	warning = FALSE
+)
+# Load data ----
+
+aggregate_url <-"https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/Agreguoti_COVID19_atvejai_ir_mirtys/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
+
+age_sex_pop_url <-     "https://osp.stat.gov.lt/documents/10180/8416503/Resident_population_sex_and_age_2021.xls"
+
+hosp_data_url <- "https://opendata.arcgis.com/api/v3/datasets/f8f5c84b20e24ff99be4dd472d377640_0/downloads/data?format=csv&spatialRefId=4326"
+
+download_restful <- function (api_call = "",
+                              data_filter = function(x) { return(x) }) {
+  if(str_length(api_call) == 0) {
+    message("Empty api_call")
+    return(NULL)
+  }
+  get_data <- GET(api_call)
+
+  get_content <- content(get_data, "text")
+
+  get_json <- fromJSON(get_content, flatten = TRUE)
+
+  get_df <- as.data.frame(get_json$features)
+
+  result_offset <- dim(get_df)
+  result_offset <- result_offset[1]
+
+  get_df <- data_filter(get_df)
+
+  page <- 1
+  done_download <- FALSE
+  supp_data <- get_data
+
+  rm("get_data", "get_content", "get_json")
+
+  while (!done_download && supp_data$status_code == 200) {
+    offset <- result_offset * page
+    page <- page + 1
+    supp_api_call <-
+      paste(api_call, "&resultOffset=", sprintf("%d", offset), sep = "")
+    supp_data <- GET(supp_api_call)
+    message( ".", appendLF = FALSE)
+
+    supp_content <- content(supp_data, "text")
+    supp_json <- fromJSON(supp_content, flatten = TRUE)
+    supp_df <- as.data.frame(supp_json$features) %>%
+      data_filter()
+    row_count <- dim(supp_json$features)
+    row_count <- row_count[1]
+
+    if (!hasName(supp_json, "exceededTransferLimit")) {
+      message(
+        "\nDownload complete"
+      )
+      done_download <- TRUE
+    }
+    if (supp_data$status_code == 200) {
+      get_df <- rbind(get_df, supp_df)
+    } else {
+      message("\nDownload finished with unexpected status code",
+              supp_data$status_code
+      )
+      break
+    }
+  }
+  return(get_df)
+}
+
+#' Download Excel Documents
+#' Taken from covidregionaldata library
+#'
+#' @param url Character string containing the full URL to the Excel document.
+#' @param archive Character string naming the file name to assign in the
+#' temporary directory.
+#' @param transpose Logical, should the read in data be transposed
+#' @param ... Additional parameters to pass to `read_excel()`.
+#' @inheritParams message_verbose
+#' @importFrom readxl read_excel
+#' @return A `data.frame`.
+download_excel <- function(url, archive, verbose = FALSE,
+                           transpose = TRUE, ...) {
+  # download
+  archive <- file.path(tempdir(), archive)
+  download.file(
+    url = url,
+    destfile = archive,
+    mode = "wb", quiet = !(verbose)
+  )
+  # read in
+  dt <- suppressMessages(
+    read_excel(archive, ...)
+  )
+
+  if (transpose) {
+    dt <- t(dt)
+  }
+  dt <- as.data.frame(dt)
+  return(dt)
+}
+
+lt_aggregate <- download_restful(
+  api_call = aggregate_url,
+  data_filter = function(x){
+    transmute(x,
+              municipality_name = attributes.municipality_name,
+              date = attributes.date,
+              sex = attributes.sex,
+              age_gr = attributes.age_gr,
+              new_cases = attributes.new_cases,
+              deaths_all = attributes.deaths_all,
+              deaths_cov1 = attributes.deaths_cov1,
+              deaths_cov2 = attributes.deaths_cov2,
+              deaths_cov3 = attributes.deaths_cov3
+    )})
+
+  lt_age_sex_data <- download_excel(
+    age_sex_pop_url,
+    archive = "population_data",
+    transpose = FALSE,
+    sheet = "Total",
+    col_types = c("text",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric", "numeric",
+                  "numeric", "numeric", "numeric", "numeric",
+                  "numeric"),
+    skip = 7) %>%
+    rename(location = "...1", total = "...2")
+
+lt_hosp_data_raw <- vroom::vroom(hosp_data_url)
+
+
+```
+
+```{r data_manipulation, echo=TRUE}
+age_bands_municipalities <- tibble(lt_aggregate) %>%
+#  select(-object_id) %>%
+  mutate(date = as_date(date)) %>%
+  group_by(municipality_name, date, age_gr) %>%
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)), .groups = "drop")
+
+age_bands <- age_bands_municipalities %>%
+  group_by(date, age_gr) %>%
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)), .groups = "drop")
+
+natl_age_data <-  lt_age_sex_data %>%
+  filter( location == "Total" ) %>%
+  select(-location) %>%
+  pivot_longer(
+    cols = !"total",
+    values_to = "count",
+    names_to = "age_range") %>%
+  mutate_if(is.character, str_remove_all, pattern = "\\d+[^\\d]") %>%
+  mutate(age_range = as.numeric(age_range)) %>%
+  mutate(age_range = replace_na(age_range, 85)) %>%
+  mutate(cohort = cut(age_range,
+                      c(0, 9, 19, 29, 39, 49, 59, 69, 79, 89 ),
+                      c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80+"),
+                      include.lowest = TRUE)) %>%
+  select(-age_range,-total) %>%
+  group_by(cohort) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+lt_age_data <- lt_age_sex_data %>%
+  filter(grepl("mun.$", location)) %>%
+  pivot_longer(
+    cols = !c("location","total"),
+    values_to = "count",
+    names_to = "age range") %>%
+  mutate_if(is.character, str_replace_all, pattern = " mun.", replacement = "")
+age_band_factors <- age_bands %>%
+  mutate(cohort = case_when(
+    age_gr == "80-89" ~ "80+",
+    age_gr == "90-99" ~ "80+",
+    age_gr == "Centenarianai" ~ "80+",
+    age_gr == "Nenustatyta" ~ NA_character_,
+    TRUE ~ age_gr
+  )) %>%
+  filter(!is.na(cohort)) %>%
+  select(-age_gr) %>%
+  group_by(date, cohort) %>%
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)), .groups = "drop")
+
+per_capita_rates <- left_join(age_band_factors, natl_age_data, by = c("cohort")) %>%
+  mutate(population = count,
+         cases_per_100k = new_cases / count * 100000,
+         deaths_all_per_mill = deaths_all / count * 1000000) %>%
+  select(-count)
+
+lt_hosp_data <- lt_hosp_data_raw %>%
+  select(-X,-Y,-object_id) %>%
+  group_by(date) %>%
+    summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)), .groups = "drop") %>%
+  pivot_longer(
+    cols = !c("date"),
+    values_to = "count",
+    names_to = "event")
+
+```
+
+```{r hospitalisation_graphs, echo=FALSE}
+
+lt_hosp_cv19 <- lt_hosp_data %>%
+  filter(str_detect(event, "^cv19.*occupied")|str_detect(event, "^cv19.*in_use")) %>%
+  mutate( event = gsub("cv19_","", event)) %>%
+  mutate( event = gsub("_r7m.*","", event))
+lt_hosp_cv19 %>%
+  ggplot(aes(x=date,y=count, colour=event)) +
+  geom_line() +
+    geom_text_repel(aes(x=date,y=count,label=event,colour=event),
+                  nudge_x=30,
+                  direction="y",hjust="left",
+                  data=tail(lt_to_plot, length(unique(lt_to_plot$event)))) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+    labs(title="Lithuania - Hospitalisation data",
+       subtitle="7 day means",
+       y="Beds",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+  scale_x_date()
+
+lt_hosp_cv19_max <- lt_hosp_cv19 %>%
+  group_by(event) %>%
+  summarise(max = max(count))
+
+```
+
+```{r age_band_graphs, echo=FALSE}
+
+colourCount = length(unique(age_bands$age_gr))
+getPalette = colorRampPalette(brewer.pal(8, "Set2"))
+
+age_bands %>%
+  group_by(age_gr) %>%
+  mutate(cases_7d = zoo::rollmean(new_cases,k=7, fill=NA) ) %>%
+  ungroup() %>%
+  filter(date > ymd("2021-08-01")) %>%
+  ggplot(aes(x = date, y=cases_7d, fill=age_gr)) +
+  theme_minimal() +
+  #geom_col(width=1, position = position_stack(reverse = TRUE)) +
+  geom_area() +
+  #scale_fill_brewer(palette = "Set2") +
+  scale_fill_viridis_d(
+    name = "Age cohort",
+    #option = "inferno",
+    breaks = c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
+               "70-79", "80-89", "90-99", "Centenarianai",  "Nenustatyta"),
+    labels = c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
+               "70-79", "80-89", "90-99", "100+",  "Unknown"),
+    direction = 1
+  ) +
+  scale_y_continuous(sec.axis = dup_axis()) +
+  labs(title="Lithuania - COVID-19 cases by age group",
+       subtitle="7 day rolling average",
+       y="New cases",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+  scale_x_date()
+```
+
+These charts are inspired by the narrow age cohort graph given by the OSP
+on their [pandemic illustrations
+page](https://osp.stat.gov.lt/pandemijos-iliustracijos):
+
+`r paste0("![Figure from https://osp.stat.gov.lt](https://osp.stat.gov.lt/documents/10180/8555211/vaiku_atvejai_per14d_100k_", strftime(today(), "%Y%m%d"),".png){.external}")`
+
+Because the age cohorts given in the two sources used do not align,
+when calculating COVID rates relative to age cohorts, a smaller
+number of larger cohorts is used. It is also possible to extend the graph
+further back into 2021.
+
+```{r cohort_prevalance_cases_cumulative, echo=FALSE, preview=TRUE}
+
+pc_rate_14d <- 
+  per_capita_rates %>%
+  group_by(cohort) %>%
+  mutate(pc_cases_14d = zoo::rollsum(cases_per_100k,k=14, fill=NA, align="right") ) %>%
+  ungroup() %>%
+  filter(date >= ymd("2021-09-01"))
+
+ntl_rate_14d <- per_capita_rates %>%
+  group_by(date) %>%
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE))) %>%
+  mutate(cases_per_100k = new_cases / population * 100000,
+         deaths_all_per_mill = deaths_all / population * 1000000) %>%
+  mutate(pc_cases_14d = zoo::rollsum(cases_per_100k,k=14, fill=NA, align="right") ) %>%
+  filter(date >= ymd("2021-09-01"))
+pc_rate_14d %>%
+  ggplot(aes(x = date, y=pc_cases_14d, colour=cohort)) +
+  theme_minimal() +
+  theme( legend.position = "none") +
+  geom_line(size=1) +
+  geom_line(data = ntl_rate_14d, aes(x=date, y=pc_cases_14d),
+            linetype = 2, colour="black") +
+  geom_text_repel(aes(x=date,y=pc_cases_14d,label=cohort,colour=cohort),
+                  nudge_x=10,
+                  direction="y",hjust="left",
+                  data=tail(pc_rate_14d, 9)) +
+  geom_text_repel(aes(x=date,y=pc_cases_14d,label="National"),
+                  colour="black",
+                  nudge_y=1000,
+                  hjust="right",
+                  data=ntl_rate_14d %>% filter(date == "2022-01-01")) +
+  #scale_fill_brewer(palette = "Set2") +
+  scale_colour_viridis_d(name = "Age cohort") +
+  scale_y_continuous() +
+  labs(title="Lithuania - COVID-19 cases by age group",
+       subtitle="14 day cumulative per 100,000",
+       y="New cases",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+  scale_x_date(expand = expansion(add=c(0,25)))
+```
+
+```{r cohort_prevalance_cases_mean, echo=FALSE}
+pc_rate_7d <- per_capita_rates %>%
+  group_by(cohort) %>%
+  mutate(pc_cases_7d_mean = zoo::rollmean(cases_per_100k,k=7, fill=NA, align="right") ) %>%
+  ungroup() %>%
+  filter(date >= ymd("2021-09-01"))
+
+ntl_rate_7d <- per_capita_rates %>%
+  group_by(date) %>%
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE))) %>%
+  mutate(cases_per_100k = new_cases / population * 100000,
+         deaths_all_per_mill = deaths_all / population * 1000000) %>%
+  mutate(pc_cases_7d_mean = zoo::rollmean(cases_per_100k,k=7, fill=NA, align="right") ) %>%
+    filter(date >= ymd("2021-09-01"))
+pc_rate_7d %>%
+  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=cohort)) +
+  theme_minimal() +
+  theme( legend.position = "none") +
+  geom_line(size=1) +
+  geom_line(data = ntl_rate_7d, aes(x=date, y=pc_cases_7d_mean),
+            linetype = 2,
+            colour="black") +
+  geom_text_repel(aes(x=date,y=pc_cases_7d_mean,label=cohort,colour=cohort),
+                  nudge_x=20,
+                  direction="y",hjust="left",
+                  data=tail(pc_rate_7d, 9)) +
+  geom_text_repel(aes(x=date,y=pc_cases_7d_mean,label="National"),
+                  colour="black",
+                  nudge_y=60,
+                  hjust="left",
+                  data=ntl_rate_7d %>% filter(date == "2021-11-15")) +
+  #scale_fill_brewer(palette = "Set2") +
+  scale_colour_viridis_d(name = "Age cohort") +
+  scale_y_continuous() +
+  labs(title="Lithuania - COVID-19 cases by age group",
+       subtitle="7 day rolling average per 100,000",
+       y="New cases",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+  scale_x_date(expand = expansion(add=c(0,15)))
+```
+
+```{r cohort_prevalance_deaths_mean, echo=FALSE}
+per_capita_rates %>%
+  group_by(cohort) %>%
+  mutate(pc_deaths_7d_mean = zoo::rollmean(deaths_all_per_mill,k=7, fill=0, align="right") ) %>%
+  ungroup() %>%
+  filter(date > ymd("2020-11-01")) %>%
+  ggplot(aes(x = date, y=pc_deaths_7d_mean, colour=cohort)) +
+  theme_minimal() +
+  geom_line(size=1) +
+  #scale_fill_brewer(palette = "Set2") +
+  scale_colour_viridis_d(name = "Age cohort", option = "inferno") +
+  scale_y_continuous(sec.axis = sec_axis(~ .)) +
+  labs(title="Lithuania - COVID-19 deaths by age group",
+       subtitle="7 day average per million",
+       y="Deaths",
+       x="Date",
+       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+  scale_x_date()
+
+```
