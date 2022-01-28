@@ -184,8 +184,14 @@ lt_aggregate <- download_restful(
     skip = 7) %>%
     rename(location = "...1", total = "...2")
 
+  
+  #https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/f8f5c84b20e24ff99be4dd472d377640_0/about
+  
 lt_hosp_data_raw <- vroom::vroom(hosp_data_url)
 
+caption_text <- paste0(
+         "Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt\nPrepared ",
+         Sys.Date())
 
 ```
 
@@ -253,182 +259,176 @@ lt_hosp_data <- lt_hosp_data_raw %>%
     values_to = "count",
     names_to = "event")
 
+lt_hosp_data %>%
+  filter(event == "cv19_hospital_beds_occupied_r7m") %>%
+  ggplot(aes(x=date,y=count)) + geom_line()
+
+lt_delta <- lt_hosp_data %>%
+  filter(event == "cv19_hospital_beds_occupied_r7m") %>%
+  arrange(date) %>%
+  mutate(delta = count - lag(count), 
+         event = "cv19_hospital_beds_occupied_r7mean_delta") %>%
+  mutate(count=delta) %>%
+  select(-delta)
+
+# compare the calculated deltas with the admissions data - they don't line up
+# ggplot() + geom_line(data=lt_delta, mapping=aes(x=date,y=count)) + geom_line(lt_hosp_cv19%>%filter(event=="Admissions"), mapping=aes(x=date,y=count))
+
+lt_hosp_data <- bind_rows(lt_hosp_data, lt_delta)  
 ```
 
 ```{r hospitalisation_graphs, echo=FALSE}
 
 lt_hosp_cv19 <- lt_hosp_data %>%
-  filter(str_detect(event, "^cv19.*occupied")|str_detect(event, "^cv19.*in_use")) %>%
+  filter(str_detect(event, "^cv19.*admissions")
+         |str_detect(event, "^cv19.*in_use")
+         |str_detect(event, "^cv19.*delta")
+         |str_detect(event, "^cv19.*occupied")) %>%
   mutate( event = gsub("cv19_","", event)) %>%
-  mutate( event = gsub("_r7m.*","", event))
+  mutate( event = gsub("_r7m.*","", event)) %>%
+  mutate( event = str_to_title(gsub("_"," ", event)))
+events_to_plot <- c(
+              # "Hospital Beds Occupied",
+              # "Oxygen Beds Occupied",
+              # "Mv Beds Occupied",
+              # "Icu Beds Occupied",
+              # "Icu Mv Beds Occupied", 
+              # "Icu Ecmo In Use",
+              "Admissions", 
+              "Admissions Oxygen",
+              "Admissions Mv"
+              )
+
 lt_hosp_cv19 %>%
+  filter( event %in% events_to_plot) %>%
   ggplot(aes(x=date,y=count, colour=event)) +
-  geom_line() +
+  geom_line(size=1) +
     geom_text_repel(aes(x=date,y=count,label=event,colour=event),
-                  nudge_x=30,
+                  nudge_x=75,
                   direction="y",hjust="left",
-                  data=tail(lt_to_plot, length(unique(lt_to_plot$event)))) +
-  theme_minimal() +
+                  data = arrange(lt_hosp_cv19,event,date)%>% 
+                    filter( event %in% events_to_plot)%>%
+                    group_by(event)%>%
+                    summarise(across(everything(), last))) +
+    theme_minimal() +
+    scale_colour_viridis_d() +
   theme(legend.position = "none") +
     labs(title="Lithuania - Hospitalisation data",
        subtitle="7 day means",
        y="Beds",
        x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date()
+       caption=caption_text
+         ) +
+   scale_x_date(limits = c(ymd("2020-12-01",NA)),expand = expansion(add = c(0,100))) 
+```
+
+
+
+```{r normalised_hospitalisation, echo=FALSE}
+lt_case_deaths <- lt_aggregate %>%
+  group_by(date) %>%
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)), .groups = "drop") %>%
+  mutate(date = as_date(date)) %>%
+  pivot_longer(
+    cols = !c("date"),
+    values_to = "count",
+    names_to = "event") %>%
+    mutate( event = str_to_title(gsub("_"," ", event))) %>%
+  group_by(event) %>%
+  mutate(count = zoo::rollmean(count,k=7, fill=NA, align="right") ) %>%
+  ungroup()
 
 lt_hosp_cv19_max <- lt_hosp_cv19 %>%
+  bind_rows(lt_case_deaths) %>%  
+  filter(date > ymd("2020-11-01") & date < ymd("2021-7-01") ) %>%
   group_by(event) %>%
-  summarise(max = max(count))
+  summarise(max = max(count)) %>%
+  # fudge things slightly: admissions must be > admissions O2 so we'll set it to 250
+  mutate(max = if_else(event == "Admissions", 250, max))
+  
+lt_hosp_nrml <- left_join(bind_rows(lt_hosp_cv19, lt_case_deaths), lt_hosp_cv19_max, by=c("event")) %>%
+  mutate( count = case_when(
+    event=="Admissions" && count == 0  ~ NA_real_,
+    TRUE ~ count ) ) %>%
+  filter(!(event == "Admissions" & count == 0)) %>%
+  mutate(normalised= count / max * 100) %>%
+    filter(event %in% c(
+      #"Icu Ecmo In Use",
+                        "Admissions",
+                        "Admissions Oxygen",
+                        "Admissions Mv",
+                      "New Cases",
+                      "Deaths Cov1"
+                      #"Icu Ecmo In Use"
+                      )) %>%
+  #filter(!(event=="Admissions" && normalised == 0)) %>%
+  arrange(date)
 
-```
-
-```{r age_band_graphs, echo=FALSE}
-
-colourCount = length(unique(age_bands$age_gr))
-getPalette = colorRampPalette(brewer.pal(8, "Set2"))
-
-age_bands %>%
-  group_by(age_gr) %>%
-  mutate(cases_7d = zoo::rollmean(new_cases,k=7, fill=NA) ) %>%
-  ungroup() %>%
-  filter(date > ymd("2021-08-01")) %>%
-  ggplot(aes(x = date, y=cases_7d, fill=age_gr)) +
-  theme_minimal() +
-  #geom_col(width=1, position = position_stack(reverse = TRUE)) +
-  geom_area() +
-  #scale_fill_brewer(palette = "Set2") +
-  scale_fill_viridis_d(
-    name = "Age cohort",
-    #option = "inferno",
-    breaks = c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
-               "70-79", "80-89", "90-99", "Centenarianai",  "Nenustatyta"),
-    labels = c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
-               "70-79", "80-89", "90-99", "100+",  "Unknown"),
-    direction = 1
-  ) +
-  scale_y_continuous(sec.axis = dup_axis()) +
-  labs(title="Lithuania - COVID-19 cases by age group",
-       subtitle="7 day rolling average",
-       y="New cases",
-       x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date()
-```
-
-These charts are inspired by the narrow age cohort graph given by the OSP
-on their [pandemic illustrations
-page](https://osp.stat.gov.lt/pandemijos-iliustracijos):
-
-`r paste0("![Figure from https://osp.stat.gov.lt](https://osp.stat.gov.lt/documents/10180/8555211/vaiku_atvejai_per14d_100k_", strftime(today(), "%Y%m%d"),".png){.external}")`
-
-Because the age cohorts given in the two sources used do not align,
-when calculating COVID rates relative to age cohorts, a smaller
-number of larger cohorts is used. It is also possible to extend the graph
-further back into 2021.
-
-```{r cohort_prevalance_cases_cumulative, echo=FALSE, preview=TRUE}
-
-pc_rate_14d <- 
-  per_capita_rates %>%
-  group_by(cohort) %>%
-  mutate(pc_cases_14d = zoo::rollsum(cases_per_100k,k=14, fill=NA, align="right") ) %>%
-  ungroup() %>%
-  filter(date >= ymd("2021-09-01"))
-
-ntl_rate_14d <- per_capita_rates %>%
-  group_by(date) %>%
-  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE))) %>%
-  mutate(cases_per_100k = new_cases / population * 100000,
-         deaths_all_per_mill = deaths_all / population * 1000000) %>%
-  mutate(pc_cases_14d = zoo::rollsum(cases_per_100k,k=14, fill=NA, align="right") ) %>%
-  filter(date >= ymd("2021-09-01"))
-pc_rate_14d %>%
-  ggplot(aes(x = date, y=pc_cases_14d, colour=cohort)) +
-  theme_minimal() +
-  theme( legend.position = "none") +
+lt_hosp_nrml %>%
+  ggplot(aes(x=date,y=normalised, colour=event)) +
   geom_line(size=1) +
-  geom_line(data = ntl_rate_14d, aes(x=date, y=pc_cases_14d),
-            linetype = 2, colour="black") +
-  geom_text_repel(aes(x=date,y=pc_cases_14d,label=cohort,colour=cohort),
-                  nudge_x=10,
-                  direction="y",hjust="left",
-                  data=tail(pc_rate_14d, 9)) +
-  geom_text_repel(aes(x=date,y=pc_cases_14d,label="National"),
-                  colour="black",
-                  nudge_y=1000,
-                  hjust="right",
-                  data=ntl_rate_14d %>% filter(date == "2022-01-01")) +
-  #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Age cohort") +
-  scale_y_continuous() +
-  labs(title="Lithuania - COVID-19 cases by age group",
-       subtitle="14 day cumulative per 100,000",
-       y="New cases",
-       x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date(expand = expansion(add=c(0,25)))
-```
-
-```{r cohort_prevalance_cases_mean, echo=FALSE}
-pc_rate_7d <- per_capita_rates %>%
-  group_by(cohort) %>%
-  mutate(pc_cases_7d_mean = zoo::rollmean(cases_per_100k,k=7, fill=NA, align="right") ) %>%
-  ungroup() %>%
-  filter(date >= ymd("2021-09-01"))
-
-ntl_rate_7d <- per_capita_rates %>%
-  group_by(date) %>%
-  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE))) %>%
-  mutate(cases_per_100k = new_cases / population * 100000,
-         deaths_all_per_mill = deaths_all / population * 1000000) %>%
-  mutate(pc_cases_7d_mean = zoo::rollmean(cases_per_100k,k=7, fill=NA, align="right") ) %>%
-    filter(date >= ymd("2021-09-01"))
-pc_rate_7d %>%
-  ggplot(aes(x = date, y=pc_cases_7d_mean, colour=cohort)) +
+    geom_text_repel(aes(x=date,y=normalised,label=event,colour=event),
+                  nudge_x=100,
+                  direction="y",hjust="right",
+                  data = arrange(lt_hosp_nrml,event,date)%>%group_by(event)%>%summarise(across(everything(), last))) +
+                  #data=group_by(lt_hosp_nrml%>%filter(date == ymd("2022-01-13")), event)%>%tail(6)) +
+  geom_hline(yintercept = 100) +
   theme_minimal() +
-  theme( legend.position = "none") +
-  geom_line(size=1) +
-  geom_line(data = ntl_rate_7d, aes(x=date, y=pc_cases_7d_mean),
-            linetype = 2,
-            colour="black") +
-  geom_text_repel(aes(x=date,y=pc_cases_7d_mean,label=cohort,colour=cohort),
-                  nudge_x=20,
-                  direction="y",hjust="left",
-                  data=tail(pc_rate_7d, 9)) +
-  geom_text_repel(aes(x=date,y=pc_cases_7d_mean,label="National"),
-                  colour="black",
-                  nudge_y=60,
-                  hjust="left",
-                  data=ntl_rate_7d %>% filter(date == "2021-11-15")) +
-  #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Age cohort") +
-  scale_y_continuous() +
-  labs(title="Lithuania - COVID-19 cases by age group",
-       subtitle="7 day rolling average per 100,000",
-       y="New cases",
+    scale_colour_viridis_d() +
+  theme(legend.position = "none") +
+    labs(title="Lithuania - Case, Hospitalisation and Deaths data",
+       subtitle="7 day means - maximum of December 2020 wave = 100 (Estimate used for Admissions)",
+       y="",
        x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date(expand = expansion(add=c(0,15)))
+       caption=caption_text) +
+  scale_x_date(limits = c(ymd("2020-12-01",NA)),expand = expansion(add = c(0,100))) +
+  scale_y_continuous(limits = c(0,NA))
 ```
 
-```{r cohort_prevalance_deaths_mean, echo=FALSE}
-per_capita_rates %>%
-  group_by(cohort) %>%
-  mutate(pc_deaths_7d_mean = zoo::rollmean(deaths_all_per_mill,k=7, fill=0, align="right") ) %>%
-  ungroup() %>%
-  filter(date > ymd("2020-11-01")) %>%
-  ggplot(aes(x = date, y=pc_deaths_7d_mean, colour=cohort)) +
-  theme_minimal() +
-  geom_line(size=1) +
-  #scale_fill_brewer(palette = "Set2") +
-  scale_colour_viridis_d(name = "Age cohort", option = "inferno") +
-  scale_y_continuous(sec.axis = sec_axis(~ .)) +
-  labs(title="Lithuania - COVID-19 deaths by age group",
-       subtitle="7 day average per million",
-       y="Deaths",
-       x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
-  scale_x_date()
 
-```
+## Dataset description (google translation) {.appendix}
+
+
+*google translation of original Lithuanian*^[https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/f8f5c84b20e24ff99be4dd472d377640_0/about]
+
+7-day averages for available and occupied inpatient beds, oxygen-supplied beds, beds in intensive care and resuscitation wards, artificial lung ventilation equipment and its use, ECMO systems and their occupancy, patient flow, and amounts of Remdesivir.
+
+7-day averages for available and occupied inpatient beds, oxygen-supplied beds, beds in intensive care and resuscitation wards, artificial lung ventilation equipment and its use, ECMO systems and their occupancy, patient flow, and amounts of Remdesivir.
+
+Data is updated in the morning at 10:00.
+
+Description of information provided:
+`date `- reporting day (end date of the reporting period 16: 00-16: 00)
+`hospital_name `- the name of the hospital
+`healthcare_region `- region (five territorial health insurance funds)
+`hospital_beds_total_r7mean`- total number of inpatient hospital beds (without RITS!)
+`hospital_beds_occupied_r7mean`- number of inpatient hospital beds (without RITS!)
+`oxygen_beds_total_r7mean`- all beds with oxygen supply (part of hospital_beds_total)
+`oxygen_beds_occupied_r7mean`- occupied beds with oxygen supply
+`mv_beds_total_r7mean`- all beds with artificial lung ventilation (DPV) (part of hospital_beds_total)
+`mv_beds_occupied_r7mean`- busy beds with DPV options
+`icu_beds_total_r7mean`- resuscitation and intensive care (RITS) beds (not part of hospital_beds_total!)
+`icu_beds_occupied_r7mean`- busy RITS beds (not part of hospital_beds_occupied!)
+`icu_ecmo_systems_total_r7mean`- total number of RITS beds with ECMO systems
+`icu_ecmo_systems_in_use_r7mean `- number of occupied RITS beds with ECMO systems
+`cv19_hospital_beds_assigned_r7mean`- Number of beds for COVID patients
+`cv19_hospital_beds_occupied_r7mean `- number of occupied COVID beds
+`cv19_oxygen_beds_assigned_r7mean`- COVID oxygen beds for patients
+`cv19_oxygen_beds_occupied_r7mean`- occupied oxygen beds for COVID patients
+`cv19_mv_beds_assigned_r7mean `- COVID Patient Beds with Artificial Lung Ventilation (DPV)
+`cv19_mv_beds_occupied_r7mean`- occupied COVID patient beds with DPV capabilities
+`cv19_icu_beds_assigned_r7mean`- COVID Patient Resuscitation and Intensive Care (RITS) Beds
+`cv19_icu_beds_occupied_r7mean`- busy RITS beds for COVID patients
+`cv19_icu_mv_beds_assigned_r7mean`- COVID Patient RITS Beds with Artificial Lung Ventilation (DPV)
+`cv19_icu_mv_beds_occupied_r7mean`- occupied RITS beds for COVID patients with DPV capability
+`cv19_icu_highflow_systems_total_r7mean`- COITS for RV beds with high-flow system
+`cv19_icu_highflow_systems_in_use_r7mean`- busy COITS RITS beds with high-flow system
+`cv19_icu_ecmo_assigned_r7mean`- RITS beds for COVID patients with EKMO system
+`cv19_icu_ecmo_in_use_r7mean`- busy RITS beds for COVID patients with EKMO system
+`cv19_admissions_r7mean`- new COVID patients (daily)
+`cv19_admissions_oxygen_r7mean`- new COVID patients receiving oxygen
+`cv19_admissions_mv_r7mean`- new COVID patients with artificial lung ventilation
+`cv19_discharges_r7mean`- COVID patient checkouts / departures
+`remdesivir_vials_used_r7mean`- used Remdesivir vials
+`remdesivir_patients_total_r7mean`- Number of patients receiving Remdesivir
+`remdesivir_patients_new_r7mean`- Number of new patients receiving Remdesivir
