@@ -93,8 +93,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <link rel="license" href="https://creativecommons.org/licenses/by/4.0/"/>
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2022-01-13"/>
-  <meta property="article:created" itemprop="dateCreated" content="2022-01-13"/>
+  <meta property="article:published" itemprop="datePublished" content="2022-01-29"/>
+  <meta property="article:created" itemprop="dateCreated" content="2022-01-29"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Lithuanian COVID-19 calculations: Vaccination status and incidence, vaccine effectiveness "/>
@@ -111,7 +111,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","base_url","twitter","creative_commons","params"]}},"value":[{"type":"character","attributes":{},"value":["Vaccination status and incidence, vaccine effectiveness "]},{"type":"character","attributes":{},"value":["2022-01-13"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["https://richardmn.github.io/lt_covid_calcs"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["site"]}},"value":[{"type":"character","attributes":{},"value":["@rmartinnielsen"]}]},{"type":"character","attributes":{},"value":["CC BY"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["download_data","prepared_by"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["label","value","input"]}},"value":[{"type":"character","attributes":{},"value":["Prepared by:"]},{"type":"character","attributes":{},"value":["Richard Martin-Nielsen"]},{"type":"character","attributes":{},"value":["text"]}]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","base_url","twitter","creative_commons","params"]}},"value":[{"type":"character","attributes":{},"value":["Vaccination status and incidence, vaccine effectiveness "]},{"type":"character","attributes":{},"value":["2022-01-29"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["https://richardmn.github.io/lt_covid_calcs"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["site"]}},"value":[{"type":"character","attributes":{},"value":["@rmartinnielsen"]}]},{"type":"character","attributes":{},"value":["CC BY"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["download_data","prepared_by"]}},"value":[{"type":"logical","attributes":{},"value":[true]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["label","value","input"]}},"value":[{"type":"character","attributes":{},"value":["Prepared by:"]},{"type":"character","attributes":{},"value":["Richard Martin-Nielsen"]},{"type":"character","attributes":{},"value":["text"]}]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2059,7 +2059,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Vaccination status and incidence, vaccine effectiveness ","authors":[],"publishedDate":"2022-01-13T00:00:00.000+02:00"}
+{"title":"Vaccination status and incidence, vaccine effectiveness ","authors":[],"publishedDate":"2022-01-29T00:00:00.000+02:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2110,6 +2110,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </nav>
 </div>
 <p><a href="https://osp.stat.gov.lt/">Lithuania’s Official Statistics Portal (OSP)</a> issues a lot of data which indicates transitions (“events”) for individuals on each day, aggregated by municipality (Lithuania has 60), gender and age cohort. I aggregate these figures further to generate national data to look at how COVID-19 is now affecting vaccinated and unvaccinated individuals.</p>
+<p>The dataset only considers first infections - individuals who are infected more than once are not counted again. With more reinfections, these data now diverge from the national data considerably.</p>
 <p>All this comes with the caveats that I am working from OSP data but these are my calculations and there may be errors. I am not an epidemiologist. Straightforward presentation of case numbers have not seen much adjustment.</p>
 <p>Further calculations (towards estimated vaccine effectiveness) may have error, including in calculations of the unvaccinated population, which influences the estimate of the proportional incidence in the unvaccinated population and thus the relative incidence in vaccinated populations.</p>
 <p>Delta has been the dominant strain of SARS-CoV2 in Lithuania since July 2021 and so some of the inflection at that point may be better attributed to the shift of the prevalent strain rather than the base aging of the vaccinations.</p>
@@ -2549,7 +2550,7 @@ Show code
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>legend.position <span class='op'>=</span> <span class='st'>"bottom"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span>sec.axis <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/sec_axis.html'>sec_axis</a></span><span class='op'>(</span><span class='op'>~</span> <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title<span class='op'>=</span><span class='st'>"Lithuania - COVID-19 cases by vaccination status"</span>,
-       subtitle<span class='op'>=</span><span class='st'>"7 day rolling average"</span>,
+       subtitle<span class='op'>=</span><span class='st'>"7 day rolling average - first infections only"</span>,
        y<span class='op'>=</span><span class='st'>"New cases"</span>,
        x<span class='op'>=</span><span class='st'>"Date"</span>,
        caption<span class='op'>=</span><span class='st'>"Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt"</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2620,7 +2621,7 @@ Show code
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>legend.position <span class='op'>=</span> <span class='st'>"bottom"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span>sec.axis <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/sec_axis.html'>sec_axis</a></span><span class='op'>(</span><span class='op'>~</span> <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title<span class='op'>=</span><span class='st'>"Lithuania - COVID-19 cases by vaccination status"</span>,
-       subtitle<span class='op'>=</span><span class='st'>"7 day average cases per 1000 population with that status"</span>,
+       subtitle<span class='op'>=</span><span class='st'>"7 day average new infections per 1000 population with that status"</span>,
        y<span class='op'>=</span><span class='st'>"New cases"</span>,
        x<span class='op'>=</span><span class='st'>"Date"</span>,
        caption<span class='op'>=</span><span class='st'>"Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt"</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2729,7 +2730,7 @@ Show code
     labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/label_percent.html'>percent</a></span>,
     oob <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/oob.html'>oob_censor</a></span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title<span class='op'>=</span><span class='st'>"Lithuania - COVID-19 vaccine effectiveness by vaccination status"</span>,
-       subtitle<span class='op'>=</span><span class='st'>"14 day mean"</span>,
+       subtitle<span class='op'>=</span><span class='st'>"14 day mean, only considering first infections"</span>,
        y<span class='op'>=</span><span class='st'>"Vaccine effectiveness"</span>,
        x<span class='op'>=</span><span class='st'>"Date"</span>,
        caption<span class='op'>=</span><span class='st'>"Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt"</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2951,37 +2952,42 @@ Show code
 <tr class="odd">
 <td style="text-align: left;">Alpha</td>
 <td style="text-align: left;">week 1</td>
-<td style="text-align: left;">76.7 (70.5 to 94.5)</td>
+<td style="text-align: left;">76.8 (70.6 to 94.5)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Alpha</td>
 <td style="text-align: left;">2-9 weeks</td>
-<td style="text-align: left;">86.3 (65.9 to 93.1)</td>
+<td style="text-align: left;">86.4 (66.1 to 93.1)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Alpha</td>
 <td style="text-align: left;">10-14 weeks</td>
-<td style="text-align: left;">88.9 (86.2 to 94.3)</td>
+<td style="text-align: left;">89.0 (86.3 to 94.3)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Delta</td>
 <td style="text-align: left;">2-9 weeks</td>
-<td style="text-align: left;">81.0 (75.0 to 90.4)</td>
+<td style="text-align: left;">81.2 (75.2 to 90.5)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Delta</td>
 <td style="text-align: left;">10-14 weeks</td>
-<td style="text-align: left;">76.2 (71.7 to 82.7)</td>
+<td style="text-align: left;">76.5 (72.1 to 82.9)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Delta</td>
 <td style="text-align: left;">15-19 weeks</td>
-<td style="text-align: left;">71.6 (68.2 to 75.1)</td>
+<td style="text-align: left;">72.1 (68.7 to 75.5)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Delta</td>
 <td style="text-align: left;">20+ weeks</td>
-<td style="text-align: left;">60.5 (53.2 to 66.4)</td>
+<td style="text-align: left;">61.3 (54.1 to 67.0)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Omicron</td>
+<td style="text-align: left;">20+ weeks</td>
+<td style="text-align: left;">37.6 (27.1 to 39.7)</td>
 </tr>
 </tbody>
 </table>
@@ -3145,7 +3151,7 @@ Show code
 <p>Because the level rate of vaccination among Lithuanians below the age of 20 is much lower than in the rest of the population, I also present calculations which only consider the population of 20 and above.</p>
 <p>First, here is a chart from the OSP showing the vaccination status by age group.</p>
 <figure>
-<img src="https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_20220113.png" class="external" alt="Figure from https://osp.stat.gov.lt" /><figcaption aria-hidden="true">Figure from <a href="https://osp.stat.gov.lt" class="uri">https://osp.stat.gov.lt</a></figcaption>
+<img src="https://osp.stat.gov.lt/documents/10180/8555211/skiepai_amzius_20220129.png" class="external" alt="Figure from https://osp.stat.gov.lt" /><figcaption aria-hidden="true">Figure from <a href="https://osp.stat.gov.lt" class="uri">https://osp.stat.gov.lt</a></figcaption>
 </figure>
 <p>The vaccine is not available for children under the age of 11, and though figures for 18 and 19 year-olds are comparable with older adults, the data for vaccination and infection/censoring are only available on 20 year increments.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -3206,7 +3212,7 @@ Show code
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>legend.position <span class='op'>=</span> <span class='st'>"bottom"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span>sec.axis <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/sec_axis.html'>sec_axis</a></span><span class='op'>(</span><span class='op'>~</span> <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title<span class='op'>=</span><span class='st'>"Lithuania - COVID-19 cases by vaccination status, 20+ only"</span>,
-       subtitle<span class='op'>=</span><span class='st'>"7 day average cases per 1000 population with that status"</span>,
+       subtitle<span class='op'>=</span><span class='st'>"7 day average first infections per 1000 population with that status"</span>,
        y<span class='op'>=</span><span class='st'>"New cases"</span>,
        x<span class='op'>=</span><span class='st'>"Date"</span>,
        caption<span class='op'>=</span><span class='st'>"Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt"</span><span class='op'>)</span> <span class='op'>+</span>

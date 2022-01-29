@@ -301,6 +301,7 @@ events_to_plot <- c(
 
 lt_hosp_cv19 %>%
   filter( event %in% events_to_plot) %>%
+  filter(!(event == "Admissions" & count == 0)) %>%
   ggplot(aes(x=date,y=count, colour=event)) +
   geom_line(size=1) +
     geom_text_repel(aes(x=date,y=count,label=event,colour=event),
