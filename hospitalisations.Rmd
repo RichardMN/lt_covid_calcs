@@ -259,9 +259,9 @@ lt_hosp_data <- lt_hosp_data_raw %>%
     values_to = "count",
     names_to = "event")
 
-lt_hosp_data %>%
-  filter(event == "cv19_hospital_beds_occupied_r7m") %>%
-  ggplot(aes(x=date,y=count)) + geom_line()
+# lt_hosp_data %>%
+#   filter(event == "cv19_hospital_beds_occupied_r7m") %>%
+#   ggplot(aes(x=date,y=count)) + geom_line()
 
 lt_delta <- lt_hosp_data %>%
   filter(event == "cv19_hospital_beds_occupied_r7m") %>%
