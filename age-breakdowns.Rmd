@@ -183,6 +183,9 @@ lt_aggregate <- download_restful(
     rename(location = "...1", total = "...2")
 
 
+caption_text <- paste0(
+         "Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt\nPrepared ",
+         Sys.Date())
 ```
 
 ```{r data_manipulation, echo=TRUE}
@@ -274,7 +277,7 @@ age_bands %>%
        subtitle="7 day rolling average",
        y="New cases",
        x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+       caption=caption_text) +
   scale_x_date()
 ```
 
@@ -328,7 +331,7 @@ pc_rate_14d %>%
        subtitle="14 day cumulative per 100,000",
        y="New cases",
        x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+       caption=caption_text) +
   scale_x_date(expand = expansion(add=c(0,25)))
 ```
 
@@ -370,7 +373,7 @@ pc_rate_7d %>%
        subtitle="7 day rolling average per 100,000",
        y="New cases",
        x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+       caption=caption_text) +
   scale_x_date(expand = expansion(add=c(0,15)))
 ```
 
@@ -390,7 +393,7 @@ per_capita_rates %>%
        subtitle="7 day average per million",
        y="Deaths",
        x="Date",
-       caption="Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt") +
+       caption=caption_text) +
   scale_x_date()
 
 ```
