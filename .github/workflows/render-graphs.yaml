@@ -31,7 +31,8 @@ jobs:
           R -e 'install.packages("renv")'
           R -e 'renv::restore()'
           R -e 'install.packages(c("curl", "httr", "jsonlite", "ggpubr", "lubridate","zoo","readxl","vroom", "patchwork","scales","spatstat","distill"))'
-          R -e 'install.packages(c("remotes", "dplyr", "tidyr", "here", "ggplot2", "roll", "scales", "tools", "rmarkdown"))'
+          R -e 'install.packages(c("remotes", "dplyr", "tidyr", "here", "ggplot2", "roll", "scales", "tools", "rmarkdown","devtools"))'
+          R -e 'devtools::install_github("Financial-Times/ftplottools")'
 
         # R -e 'remotes::install_github("epiforecasts/covidregionaldata")'
 
