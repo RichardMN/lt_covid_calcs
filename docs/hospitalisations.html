@@ -87,13 +87,15 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--radix_placeholder_meta_tags-->
-
   <title>Lithuanian COVID-19 calculations: Hospital admissions in the Omicron wave</title>
+  
+  
   <link rel="license" href="https://creativecommons.org/licenses/by/4.0/"/>
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2022-02-03"/>
-  <meta property="article:created" itemprop="dateCreated" content="2022-02-03"/>
+  <meta property="article:published" itemprop="datePublished" content="2022-02-04"/>
+  <meta property="article:created" itemprop="dateCreated" content="2022-02-04"/>
+  
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Lithuanian COVID-19 calculations: Hospital admissions in the Omicron wave"/>
   <meta property="og:type" content="article"/>
@@ -109,7 +111,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","params","date","output","base_url","twitter","creative_commons"]}},"value":[{"type":"character","attributes":{},"value":["Hospital admissions in the Omicron wave"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["prepared_by"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["label","value","input"]}},"value":[{"type":"character","attributes":{},"value":["Prepared by:"]},{"type":"character","attributes":{},"value":["Richard Martin-Nielsen"]},{"type":"character","attributes":{},"value":["text"]}]}]},{"type":"character","attributes":{},"value":["2022-02-03"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"character","attributes":{},"value":["https://richardmn.github.io/lt_covid_calcs"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["site"]}},"value":[{"type":"character","attributes":{},"value":["@rmartinnielsen"]}]},{"type":"character","attributes":{},"value":["CC BY"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","params","date","output","base_url","twitter","creative_commons"]}},"value":[{"type":"character","attributes":{},"value":["Hospital admissions in the Omicron wave"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["prepared_by"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["label","value","input"]}},"value":[{"type":"character","attributes":{},"value":["Prepared by:"]},{"type":"character","attributes":{},"value":["Richard Martin-Nielsen"]},{"type":"character","attributes":{},"value":["text"]}]}]},{"type":"character","attributes":{},"value":["2022-02-04"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"character","attributes":{},"value":["https://richardmn.github.io/lt_covid_calcs"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["site"]}},"value":[{"type":"character","attributes":{},"value":["@rmartinnielsen"]}]},{"type":"character","attributes":{},"value":["CC BY"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2056,7 +2058,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Hospital admissions in the Omicron wave","authors":[],"publishedDate":"2022-02-03T00:00:00.000+02:00"}
+{"title":"Hospital admissions in the Omicron wave","authors":[],"publishedDate":"2022-02-04T00:00:00.000+00:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2192,9 +2194,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <p>This plot shows COVID-19 related hospital admissions since late 2020.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
-<summary>
-Show code
-</summary>
+<summary>Show code</summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>lt_hosp_cv19</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span> <span class='va'>event</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='va'>events_to_plot</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
@@ -2228,7 +2228,7 @@ Show code
 <h2 id="data-source">Data source</h2>
 <p>These charts are drawn using data published by the <a href="https://osp.stat.gov.lt/pradinis">Official Statistics Portal</a> (OSP) on their <a href="https://experience.arcgis.com/experience/cab84dcfe0464c2a8050a78f817924ca/page/page_5/">COVID-19 open data</a> site, along with the <a href="https://osp.stat.gov.lt/en_GB/gyventojai1">annual population counts for Lithuanian municipalities</a>, also published by the OSP.</p>
 <p>The R markdown source is available as a <a href="https://github.com/RichardMN/lt_covid_calcs">github repo</a>.</p>
-<h2 class="appendix" id="dataset-description-google-translation">Dataset description (google translation)</h2>
+<h2 id="dataset-description-google-translation" class="appendix">Dataset description (google translation)</h2>
 <p><em>google translation of original Lithuanian</em><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <p>7-day averages for available and occupied inpatient beds, oxygen-supplied beds, beds in intensive care and resuscitation wards, artificial lung ventilation equipment and its use, ECMO systems and their occupancy, patient flow, and amounts of Remdesivir.</p>
 <p>Data is updated in the morning at 10:00.</p>
