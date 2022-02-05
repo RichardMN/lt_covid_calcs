@@ -12,7 +12,6 @@ This website uses RMarkdown files to automatically generate graphs which
 present for Lithuania:
 
 - [Case and death incidence for COVID-19 for national age cohorts](age-breakdowns)
+- [Hospitalisation comparison in the Omicron wave](hospitalisations)
 - [Comparative incidence by vaccination status and vaccine effectiveness](ongoing-breakthrough-calculations)
 - [*Archived* comparative incidence by vaccination status and vaccine effectiveness for 2021](breakthrough-calculations)
-
-
