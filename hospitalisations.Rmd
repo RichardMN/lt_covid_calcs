@@ -56,9 +56,9 @@ knitr::opts_chunk$set(
 
 aggregate_url <-"https://services3.arcgis.com/MF53hRPmwfLccHCj/arcgis/rest/services/Agreguoti_COVID19_atvejai_ir_mirtys/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
 
-age_sex_pop_url <-     "https://osp.stat.gov.lt/documents/10180/8416503/Resident_population_sex_and_age_2021.xls"
-
 hosp_data_url <- "https://opendata.arcgis.com/api/v3/datasets/f8f5c84b20e24ff99be4dd472d377640_0/downloads/data?format=csv&spatialRefId=4326"
+
+  #https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/f8f5c84b20e24ff99be4dd472d377640_0/about
 
 download_restful <- function (api_call = "",
                               data_filter = function(x) { return(x) }) {
@@ -118,38 +118,6 @@ download_restful <- function (api_call = "",
   return(get_df)
 }
 
-#' Download Excel Documents
-#' Taken from covidregionaldata library
-#'
-#' @param url Character string containing the full URL to the Excel document.
-#' @param archive Character string naming the file name to assign in the
-#' temporary directory.
-#' @param transpose Logical, should the read in data be transposed
-#' @param ... Additional parameters to pass to `read_excel()`.
-#' @inheritParams message_verbose
-#' @importFrom readxl read_excel
-#' @return A `data.frame`.
-download_excel <- function(url, archive, verbose = FALSE,
-                           transpose = TRUE, ...) {
-  # download
-  archive <- file.path(tempdir(), archive)
-  download.file(
-    url = url,
-    destfile = archive,
-    mode = "wb", quiet = !(verbose)
-  )
-  # read in
-  dt <- suppressMessages(
-    read_excel(archive, ...)
-  )
-
-  if (transpose) {
-    dt <- t(dt)
-  }
-  dt <- as.data.frame(dt)
-  return(dt)
-}
-
 lt_aggregate <- download_restful(
   api_call = aggregate_url,
   data_filter = function(x){
@@ -165,91 +133,14 @@ lt_aggregate <- download_restful(
               deaths_cov3 = attributes.deaths_cov3
     )})
 
-  lt_age_sex_data <- download_excel(
-    age_sex_pop_url,
-    archive = "population_data",
-    transpose = FALSE,
-    sheet = "Total",
-    col_types = c("text",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric", "numeric",
-                  "numeric", "numeric", "numeric", "numeric",
-                  "numeric"),
-    skip = 7) %>%
-    rename(location = "...1", total = "...2")
 
-  
-  #https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/f8f5c84b20e24ff99be4dd472d377640_0/about
-  
+
 lt_hosp_data_raw <- vroom::vroom(hosp_data_url)
 
 caption_text <- paste0(
-         "Richard Martin-Nielsen | Data: Office of Statistics Portal osp.stat.gov.lt | Prepared ",
+         "Richard Martin-Nielsen | Data: Official Statistics Portal osp.stat.gov.lt | Prepared ",
          Sys.Date())
 
-age_bands_municipalities <- tibble(lt_aggregate) %>%
-#  select(-object_id) %>%
-  mutate(date = as_date(date)) %>%
-  group_by(municipality_name, date, age_gr) %>%
-  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)), .groups = "drop")
-
-age_bands <- age_bands_municipalities %>%
-  group_by(date, age_gr) %>%
-  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)), .groups = "drop")
-
-natl_age_data <-  lt_age_sex_data %>%
-  filter( location == "Total" ) %>%
-  select(-location) %>%
-  pivot_longer(
-    cols = !"total",
-    values_to = "count",
-    names_to = "age_range") %>%
-  mutate_if(is.character, str_remove_all, pattern = "\\d+[^\\d]") %>%
-  mutate(age_range = as.numeric(age_range)) %>%
-  mutate(age_range = replace_na(age_range, 85)) %>%
-  mutate(cohort = cut(age_range,
-                      c(0, 9, 19, 29, 39, 49, 59, 69, 79, 89 ),
-                      c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80+"),
-                      include.lowest = TRUE)) %>%
-  select(-age_range,-total) %>%
-  group_by(cohort) %>%
-  summarise(count = sum(count), .groups = "drop")
-
-lt_age_data <- lt_age_sex_data %>%
-  filter(grepl("mun.$", location)) %>%
-  pivot_longer(
-    cols = !c("location","total"),
-    values_to = "count",
-    names_to = "age range") %>%
-  mutate_if(is.character, str_replace_all, pattern = " mun.", replacement = "")
-age_band_factors <- age_bands %>%
-  mutate(cohort = case_when(
-    age_gr == "80-89" ~ "80+",
-    age_gr == "90-99" ~ "80+",
-    age_gr == "Centenarianai" ~ "80+",
-    age_gr == "Nenustatyta" ~ NA_character_,
-    TRUE ~ age_gr
-  )) %>%
-  filter(!is.na(cohort)) %>%
-  select(-age_gr) %>%
-  group_by(date, cohort) %>%
-  summarise(across(where(is.numeric), ~ sum(.x, na.rm=TRUE)), .groups = "drop")
-
-per_capita_rates <- left_join(age_band_factors, natl_age_data, by = c("cohort")) %>%
-  mutate(population = count,
-         cases_per_100k = new_cases / count * 100000,
-         deaths_all_per_mill = deaths_all / count * 1000000) %>%
-  select(-count)
 
 lt_hosp_data <- lt_hosp_data_raw %>%
   select(-X,-Y,-object_id) %>%
@@ -264,18 +155,18 @@ lt_hosp_data <- lt_hosp_data_raw %>%
 #   filter(event == "cv19_hospital_beds_occupied_r7m") %>%
 #   ggplot(aes(x=date,y=count)) + geom_line()
 
-lt_delta <- lt_hosp_data %>%
-  filter(event == "cv19_hospital_beds_occupied_r7m") %>%
-  arrange(date) %>%
-  mutate(delta = count - lag(count), 
-         event = "cv19_hospital_beds_occupied_r7mean_delta") %>%
-  mutate(count=delta) %>%
-  select(-delta)
+# lt_delta <- lt_hosp_data %>%
+#   filter(event == "cv19_hospital_beds_occupied_r7m") %>%
+#   arrange(date) %>%
+#   mutate(delta = count - lag(count), 
+#          event = "cv19_hospital_beds_occupied_r7mean_delta") %>%
+#   mutate(count=delta) %>%
+#   select(-delta)
 
 # compare the calculated deltas with the admissions data - they don't line up
 # ggplot() + geom_line(data=lt_delta, mapping=aes(x=date,y=count)) + geom_line(lt_hosp_cv19%>%filter(event=="Admissions"), mapping=aes(x=date,y=count))
 
-lt_hosp_data <- bind_rows(lt_hosp_data, lt_delta)  
+#lt_hosp_data <- bind_rows(lt_hosp_data, lt_delta)  
 ```
 
 ## The Omicron wave compared to others 
@@ -302,21 +193,24 @@ lt_hosp_cv19 <- lt_hosp_data %>%
   mutate( event = gsub("_r7m.*","", event)) %>%
   mutate( event = str_to_title(gsub("_"," ", event))) %>%
     mutate(event = case_when(
-    event == "Admissions Oxygen" ~ "with Oxygen",
-    event == "Admissions Mv"     ~ "on Ventilator",
+    event == "Admissions Oxygen" ~ "Admissions with Oxygen",
+    event == "Admissions Mv"     ~ "Admissions on Ventilator",
     event == "Deaths Cov1"       ~ "Deaths", 
+    #event == "Hospital Beds Occupied" ~ "Admissions with Oxygen",
+    
+    #event == "Admissions Mv"     ~ "Admissions on Ventilator",
     TRUE ~ event
   ))
 events_to_plot <- c(
-              # "Hospital Beds Occupied",
-              # "Oxygen Beds Occupied",
+               "Hospital Beds Occupied",
+               "Oxygen Beds Occupied",
               # "Mv Beds Occupied",
-              # "Icu Beds Occupied",
+               "Icu Beds Occupied"
               # "Icu Mv Beds Occupied", 
               # "Icu Ecmo In Use",
-              "Admissions", 
-              "with Oxygen",
-              "on Ventilator"
+              #"Admissions", 
+              #"with Oxygen",
+              #"on Ventilator"
               )
 
 lt_case_deaths <- lt_aggregate %>%
@@ -341,22 +235,29 @@ lt_hosp_cv19_max <- lt_hosp_cv19 %>%
   mutate(max = if_else(event == "Admissions", 250, max))
   
 lt_hosp_nrml <- left_join(bind_rows(lt_hosp_cv19, lt_case_deaths), lt_hosp_cv19_max, by=c("event")) %>%
-  mutate( count = case_when(
-    event=="Admissions" && count == 0  ~ NA_real_,
-    TRUE ~ count ) ) %>%
-  filter(!(event == "Admissions" & count == 0)) %>%
+  # mutate( count = case_when(
+  #   event=="Admissions" && count == 0  ~ NA_real_,
+  #   TRUE ~ count ) ) %>%
+  # filter(!(event == "Admissions" & count == 0)) %>%
   mutate(normalised= count / max * 100) %>%
     filter(event %in% c(
       #"Icu Ecmo In Use",
-                        "Admissions",
-                        "with Oxygen",
-                        "on Ventilator",
+                      #  "Admissions",
+                        # "with Oxygen",
+                        # "on Ventilator",
+                        "Hospital Beds Occupied",
+                        "Oxygen Beds Occupied",
+                        # "Mv Beds Occupied",
+                        "Icu Beds Occupied",
                       "New Cases",
                       "Deaths Cov1"
                       #"Icu Ecmo In Use"
                       )) %>%
   mutate(event = case_when(
-    event == "Deaths Cov1"       ~ "Deaths", 
+    event == "Deaths Cov1"            ~ "Deaths", 
+    event == "Hospital Beds Occupied" ~ "COVID-19 Beds",
+    event == "Oxygen Beds Occupied"   ~ "Beds with O2",
+    event == "Icu Beds Occupied"      ~ "ICU",
     TRUE ~ event
   )) %>%
   #filter(!(event=="Admissions" && normalised == 0)) %>%
@@ -368,45 +269,53 @@ lt_hosp_nrml %>%
     geom_text_repel(aes(x=date,y=normalised,label=event,colour=event),
                   nudge_x=100,
                   direction="y",hjust="right",
-                  data = arrange(lt_hosp_nrml,event,date)%>%group_by(event)%>%summarise(across(everything(), last))) +
+                  data = arrange(lt_hosp_nrml,event,date)%>%
+                    group_by(event)%>%
+                    summarise(across(everything(), last)) ) +
                   #data=group_by(lt_hosp_nrml%>%filter(date == ymd("2022-01-13")), event)%>%tail(6)) +
   geom_hline(yintercept = 100) +
   ft_theme() +
-  scale_color_ft("oxford") +
+  scale_color_ft("origami primary") +
   theme(legend.position = "none") +
     labs(title="Lithuania - Case, Hospitalisation and Deaths data",
-       subtitle="7 day averages - December 2020 wave max = 100*",
+       subtitle="7 day averages - December 2020 wave max = 100",
        y="",
        x="Date",
-       caption=paste0("* Estimate used for maximum admissions because data only available from February 2021\n  ", caption_text)) +
+       caption=paste0("", caption_text)) +
   scale_x_date(limits = c(ymd("2020-12-01",NA)),expand = expansion(add = c(0,100))) +
   scale_y_continuous(limits = c(0,NA))
 ```
 
-## Hospital admissions since late 2020
+## Hospital occupancy since late 2020
 
-This plot shows COVID-19 related hospital admissions since late 2020.
+This plot shows COVID-19 related hospital bed occupancy since late 2020.
 
 ```{r hospitalisation_graphs, echo=FALSE}
 
-lt_hosp_cv19 %>%
+lt_hosp_occupancy_labelled <- lt_hosp_cv19 %>%
   filter( event %in% events_to_plot) %>%
-  filter(!(event == "Admissions" & count == 0)) %>%
+    mutate(event = case_when(
+    event == "Deaths Cov1"            ~ "Deaths", 
+    event == "Hospital Beds Occupied" ~ "COVID-19 Beds",
+    event == "Oxygen Beds Occupied"   ~ "Beds with O2",
+    event == "Icu Beds Occupied"      ~ "ICU",
+    TRUE ~ event
+  ))
+
+lt_hosp_occupancy_labelled %>%
   ggplot(aes(x=date,y=count, colour=event)) +
   geom_line(size=1) +
-    geom_text_repel(aes(x=date,y=count,label=event,colour=event),
+  geom_text_repel(aes(x=date,y=count,label=event,colour=event),
                   nudge_x=75,
                   direction="y",hjust="left",
-                  data = arrange(lt_hosp_cv19,event,date)%>% 
-                    filter( event %in% events_to_plot)%>%
+                  data = arrange(lt_hosp_occupancy_labelled,event,date)%>%
                     group_by(event)%>%
                     summarise(across(everything(), last))) +
-    #theme_minimal() +
   ft_theme() +
-  scale_color_ft("oxford") +
+  scale_color_ft("teal") +
     #scale_colour_viridis_d() +
   theme(legend.position = "none") +
-    labs(title="Lithuania - Hospitalisation admissions",
+    labs(title="Lithuania - Hospital bed occupancy",
        subtitle="7 day means",
        y="Beds",
        x="Date",
@@ -421,9 +330,7 @@ lt_hosp_cv19 %>%
 These charts are drawn using data published by the [Official Statistics
 Portal](https://osp.stat.gov.lt/pradinis) (OSP) on their [COVID-19 open
 data](https://experience.arcgis.com/experience/cab84dcfe0464c2a8050a78f817924ca/page/page_5/)
-site, along with the [annual population counts for Lithuanian
-municipalities](https://osp.stat.gov.lt/en_GB/gyventojai1), also
-published by the OSP.
+site.
 
 The R markdown source is available as a [github
 repo](https://github.com/RichardMN/lt_covid_calcs).
