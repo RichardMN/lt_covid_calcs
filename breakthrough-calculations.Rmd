@@ -76,6 +76,12 @@ theme_set(
     theme(legend.position = "bottom")
   )
 
+# set random seed 
+# this is so that re-running the graph generation on a regular basis (as we do) without
+# changing the data (which we do, since the data is now fixed) doesn't generate changed
+# graphs (due to the jitter used)
+set.seed(6381045)
+
 # dataset source: ----
 
 # https://open-data-ls-osp-sdg.hub.arcgis.com/datasets/1fd352a1c4534afe8ff87c564c0724c0_0/about

@@ -80,6 +80,13 @@ theme_set(
     theme(legend.position = "bottom")
   )
 
+
+# set random seed 
+# this is so that re-running the graph generation on a regular basis (as we do) when
+# the data doesn't change (e.g. twice in the same day) doesn't generate changed
+# graphs (due to the jitter used)
+set.seed(6381045)
+
 # dataset source: ----
 
 # This is the source for the vaccination status transition table
