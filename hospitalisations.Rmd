@@ -1,5 +1,5 @@
 ---
-title: "Hospital admissions in the Omicron wave"
+title: "Hospital occupancy in the Omicron wave"
 params:
   prepared_by:
     label: "Prepared by:"
@@ -8,6 +8,9 @@ params:
 date: "`r Sys.Date()`"
 output: distill::distill_article
 base_url: https://richardmn.github.io/lt_covid_calcs
+description: Hospital occupancy during the Omicron wave in Lithuania
+preview: https://richardmn.github.io/lt_covid_calcs/hospitalisations_files/figure-html5/normalised_hospitalisation-1.png
+repository_url: https://github.com/richardmn/lt_covid_calcs
 twitter:
   site: "@rmartinnielsen"
 creative_commons: CC BY
@@ -177,9 +180,6 @@ the latest wave than in previous waves. This graph (similar to
 setting 100 as the maximum of the
 December 2020 wave (Lithuania's pre-Omicron maximum).
 This also shows the time delay seen between the curves in previous waves.
-
-Admissions data is not available for Lithuania before February 2021, so an estimate of the maximum
-reached in the December 2020 wave is used.
 
 ```{r normalised_hospitalisation, echo=FALSE}
 
